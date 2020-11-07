@@ -24,7 +24,7 @@ export default {
   data () {
     return {
       ws: null,
-      serverUrl: "ws://localhost:8080/ws" // Idk what to put here lol
+      serverUrl: "ws://localhost:8080/ws" 
     }
   },
   // mounted is one of Vue's Virtual DOM's Lifecycles (similar to onpageload for regular js)

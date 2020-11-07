@@ -12,9 +12,9 @@ func main () {
 
 	log.Println("Starting the backend server at http://localhost:8080/")
 
-	route := mux.NewRouter()
+	router := mux.NewRouter()
 
-	AddAppRoutes(route)
+	AddAppRoutes(router)
 
-	log.Fatal(http.ListenAndServe(":8080", route))
+	log.Fatal(http.ListenAndServe(":8080", router))
 }

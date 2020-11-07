@@ -5,14 +5,9 @@ import (
 	//"bytes"
 	//"encoding/json"
 	"log"
-	"time"
+	//"time"
 
 	"github.com/gorilla/websocket"
-)
-
-const (
-	// Set a wait period before you send another keyboard action
-	keyboardPressWait = 1 * time.Second
 )
 
 
