@@ -16,5 +16,5 @@ func main () {
 
 	AddAppRoutes(route)
 
-	log.Fatal(http.ListenAndServe(":8000", route))
+	log.Fatal(http.ListenAndServe(":8080", route))
 }

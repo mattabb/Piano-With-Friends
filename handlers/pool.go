@@ -14,10 +14,10 @@ func NewPool() *Pool {
 func (pool *Pool) Run() {
 	for {
 		select {
-		case client := <- hub.register:
+		case client := <- pool.register:
 			HandleUserRegisterEvent(pool, client)
 
-		case client := <- hub.unregister:
+		case client := <- pool.unregister:
 			HandleUserDisconnectEvent(pool, client)
 		}
 	}
