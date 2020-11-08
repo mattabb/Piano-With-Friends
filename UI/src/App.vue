@@ -51,13 +51,14 @@
                 Piano With Friends
               </h1>
               <p>Enter your username</p>
-              <v-form ref="usernameLogin">
+              <v-form ref="usernameLogin" @submit="submit" onSubmit="return false;">
                 <v-text-field
                   v-model="connection.username"
                   label="Username"
                 ></v-text-field>
                 <v-btn 
                   depressed 
+                  ref="submitButton"
                   color="primary"
                   :loading = "loading"
                   :disabled = "loading"
