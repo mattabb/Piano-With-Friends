@@ -10,7 +10,6 @@ func NewPool() *Pool {
 	}
 }
 
-
 func (pool *Pool) Run() {
 	for {
 		select {

@@ -4,17 +4,18 @@ import (
 	// Internal Dependencies
 	"log"
 	"net/http"
+
 	// External Dependencies
 	"github.com/gorilla/mux"
 )
 
-func main () {
+func main() {
 
-	log.Println("Starting the backend server at http://localhost:8080/")
+	log.Println("Starting the backend server at http://localhost:8000/")
 
 	router := mux.NewRouter()
-
+	router.Host("localhost:8080")
 	AddAppRoutes(router)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8000", router))
 }

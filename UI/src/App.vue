@@ -48,18 +48,23 @@ export default {
   components: {
     HelloWorld
   },
-
   data: () => ({
     ws: null,
-    serverUrl: "ws://localhost:8080/ws"
+    serverUrl: "localhost:8000"
   }),
   mounted: function() {
-    this.connectToWebsocket()
+    this.setWebsocketConnection()
   },
   methods: {
-    connectToWebsocket() {
-      this.ws = new WebSocket(this.serverUrl)
-      this.ws.addEventListener("open", event => { this.onWebsocketOpen(event); })
+    setWebsocketConnection() {
+      // Ask for username and connect to websocket with it
+      const username = prompt("Enter username")
+      if (window["WebSocket"]) {
+        const socketConnection = new WebSocket("ws://" + this.serverUrl + "/ws/" + username)
+        this.ws = socketConnection
+      }
+
+      this.ws.addEventListener("open", event => {this.onWebsocketOpen(event)})
     },
     onWebsocketOpen(event) {
       console.log(event, "connected to websocket!")
