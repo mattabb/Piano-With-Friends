@@ -1,61 +1,69 @@
 <template>
-    <!-- 
-      This is where we export our components, main.js imports this app component 
-      and "mounts" it onto our DOM in public/index.html
-    -->
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
-    <!-- <PianoContainer/> -->
+  <v-app>
+    <v-app-bar app color="primary" dark>
+      <div class="d-flex align-center">
+        <v-img
+          alt="Vuetify Logo"
+          class="shrink mr-2"
+          contain
+          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
+          transition="scale-transition"
+          width="40"
+        />
 
-  </div>
+        <v-img
+          alt="Vuetify Name"
+          class="shrink mt-1 hidden-sm-and-down"
+          contain
+          min-width="100"
+          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
+          width="100"
+        />
+      </div>
+
+      <v-spacer></v-spacer>
+
+      <v-btn
+        href="https://github.com/vuetifyjs/vuetify/releases/latest"
+        target="_blank"
+        text
+      >
+        <span class="mr-2">Latest Release</span>
+        <v-icon>mdi-open-in-new</v-icon>
+      </v-btn>
+    </v-app-bar>
+
+    <v-main>
+      <HelloWorld />
+    </v-main>
+  </v-app>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
-// import PianoContainer from "./components/PianoContainer";
+import HelloWorld from "./components/HelloWorld";
 
 export default {
   name: "App",
+
   components: {
-    HelloWorld,
-    // PianoContainer <- This is where we export "components" (think of them as custom-div elements) to use in the app template
+    HelloWorld
   },
-  data () {
-    return {
-      ws: null,
-      serverUrl: "ws://localhost:8080/ws" 
-    }
-  },
-  // mounted is one of Vue's Virtual DOM's Lifecycles (similar to onpageload for regular js)
+
+  data: () => ({
+    ws: null,
+    serverUrl: "ws://localhost:8080/ws"
+  }),
   mounted: function() {
     this.connectToWebsocket()
   },
   methods: {
     connectToWebsocket() {
-      // connect to websocket at server url
-      this.ws = new WebSocket( this.serverUrl );
-      this.ws.addEventListener('open', (event) => { this.onWebsocketOpen(event)}
-      )
+      this.ws = new WebSocket(this.serverUrl)
+      this.ws.addEventListener("open", event => { this.onWebsocketOpen(event); })
     },
-    onWebsocketOpen() {
-      console.log("connected to ws!")
+    onWebsocketOpen(event) {
+      console.log(event, "connected to websocket!")
     }
   }
-
 };
 </script>
-
-<style>
-/* 
-  Here is where we have our global styling, (fonts/main colors, etc)
-  components will get their own specific styling in their file 
-*/
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-</style>
