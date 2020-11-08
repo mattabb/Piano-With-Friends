@@ -1,97 +1,80 @@
-# Multiplayer Piano
+# Piano With Friends
+> Piano with Friends is a project which allows multiple people to connect and play piano together using websockets.  It utilizes a VueJS front-end created from Vue-CLI 3 and using Vuetify, alongside a GoLang server backend.
 
-Multiplayer piano is a web application which uses a VueJS front-end and 
-serves it using the Gorilla mux package in GoLang.
+## Table of contents
+* [General info](#general-info)
+* [Screenshots](#screenshots)
+* [Technologies](#technologies)
+* [Setup](#setup)
+* [Features](#features)
+* [Status](#status)
 
-The VueJS is created using vue-cli-service, meaning there are some boiler-plates built in, such as ESLint, Jest testing (unit-testing which will be used later) and Babel (in case we have someone using IE lol).  While all of these files seem confusing in our UI folder, the only ones that matter right now are the public and src which contain our html and JS.
-## Installation
+## General info
+Descriptions
 
-Use the package manager npm to install multiplayer piano.
+## Screenshots
+![Example screenshot](./img/screenshot.png)
 
+## Technologies
+### Front-end (Vue)
+#### Vue-CLI 3
+Enter description -- includes Vuetify, linter, jest unit testing, webpack
+### 
+
+### Back-end (Go)
+#### Gorilla
+Enter description -- includes mux, websockets
+
+## Setup
+### Front-End
+Navigate to the UI directory
+
+To run the development server
+```bash 
+$ npm run serve
+```
+
+To build the project into production
+```bash 
+$ npm run build
+```
+To run a unit-test using Jest
+```bash 
+$ npm run test:unit 
+```
+
+To run the ESLinter 
+```bash 
+$ npm run lint
+```
+
+### Back-End
+Navigate to the backend directory
+
+To Run the server
+```bash 
+$ go run ./
+```
+
+To build for production
 ```bash
-npm install
-```
-
-## Structure
-
-In order to deploy our front-end we're able to either serve or build
-```bash
-npm run serve
-npm run build
-```
-
-Server.go contains our main function in Golang which will be ran to run our server.
-
-However, i'm looking to implement our websockets and back-end using go, and connect this to our front-end (I think this might be flawed?)
-
-
-### Server.go
-```
-
-func main() {
-  ... <- just log.println
-  // Create our router instance using gorilla mux
-  router := mux.NewRouter()
-  // Call AddAppRoutes in routes.go
-  AddAppRoutes(router)
-
-  log.Fatal(http.ListenAndServe(":8080", router))
-}
-
-```
-
-### routes.go
-```
-func AddAppRoutes() {
-    // This is supposed to serve our JS files that are separated from the index.html
-    // I think this is where my problem is somehow
-    setStaticFolder(route)
-
-	// Implement websockets and handlers (I don't think this is changing anything and separate
-    // from the problem i'm having
-	pool := handlers.NewPool()
-	go pool.Run()
-	log.Print("pool ran")
-
-
-	// Set the default route to the index.html
-	route.HandleFunc("/", handlers.RenderHome)
-	
-    // This is irrelevant and will be worked on after I get the front-end served
-	// // Websocket handling
-	// route.HandleFunc("/ws/{username}", func(responseWriter http.ResponseWriter, request *http.Request) {
-		
-	// 	var upgrader = websocket.Upgrader{
-	// 		ReadBufferSize: 	1024,
-	// 		WriteBufferSize: 	1024,
-	// 	}
-
-	// 	username := mux.Vars(request)["username"]
-
-	// 	connection, err := upgrader.Upgrade(responseWriter, request, nil)
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		return
-	// 	}
-
-	// 	handlers.CreateNewSocketUser(pool, connection, username)
-	// })
-
-	log.Println("Routes loaded.")
-}
-```
-
-### handlers/routes-handlers
-This is where we call RenderHome from => This is just supposed to render the index.html file... I believe the problem is that the JS is separate from this file and so it's serving the index.html but not the JS, therefore the VueJS isn't getting mounted onto the app element... resulting in the blank page.  However i'm not sure how to fix this.
-
-```
-// RenderHome renders the home page
-func RenderHome(response http.ResponseWriter, request *http.Request) {
-	http.ServeFile(response, request, "UI/public/index.html")
-}
-
+$ go build ./
 ```
 
 
+## Code Examples
+Show examples of usage:
+`put-your-code-here`
 
+## Features
+List of features ready and TODOs for future development
+* Awesome feature 1
+* Awesome feature 2
+* Awesome feature 3
 
+To-do list:
+* Wow improvement to be done 1
+* Wow improvement to be done 2
+
+## Status
+Project is: _in progress_
