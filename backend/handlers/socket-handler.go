@@ -21,6 +21,8 @@ func CreateNewSocketUser(pool *Pool, connection *websocket.Conn, username string
 	}
 
 	client.pool.register <- client
+	log.Println("Socket user created with username:", username)
+	log.Println("Our pool is now, ", client.pool.clients)
 	// Write to the websocket (This is gonna contain the logic where we write to the websocket)
 	go client.writePump()
 	// Read from the websocket (This is gonna contain the logic where we READ from the websocket)
@@ -49,6 +51,7 @@ func HandleUserDisconnectEvent(pool *Pool, client *Client) {
 		}) 
 	}
 }
+
 
 // BroadCastSocketEventToAllClient will emit the socket events to all socket users
 func BroadcastSocketEventToAllClient(pool *Pool, payload SocketEventStruct) {

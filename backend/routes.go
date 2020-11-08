@@ -9,6 +9,8 @@ import (
 	// External Dependencies
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"math/rand"
+	"strconv"
 
 )
 
@@ -33,8 +35,15 @@ func AddAppRoutes(route *mux.Router) {
 		var upgrader = websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool { return true },
 		}
-
 		username := mux.Vars(request)["username"]
+
+		// Generate some random numbers to append to username so we don't have overlapping usernames
+		for i := 0; i < 4; i++ {
+			randInt := rand.Intn(10)
+			randIntString := strconv.Itoa(randInt) 
+			username += randIntString
+		}
+
 		connection, err := upgrader.Upgrade(responseWriter, request, nil)
 		if err != nil {
 			log.Println(err)
