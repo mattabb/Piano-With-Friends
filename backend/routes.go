@@ -33,8 +33,16 @@ func AddAppRoutes(route *mux.Router) {
 	route.HandleFunc("/ws/{username}", func(responseWriter http.ResponseWriter, request *http.Request) {
 		
 		var upgrader = websocket.Upgrader{
+			// This allows connections from anywhere... the logic commented out below can restrict
+			// origins, in our case we would want to restrict to our website homepage as we get further
 			CheckOrigin: func(r *http.Request) bool { return true },
 		}
+
+		// if req.Header.Get("Origin") != "http://"+req.Host {
+		// 	http.Error(w, "Origin not allowed", http.StatusForbidden)
+		// 	return
+		// }
+
 		username := mux.Vars(request)["username"]
 
 		// Generate some random numbers to append to username so we don't have overlapping usernames
