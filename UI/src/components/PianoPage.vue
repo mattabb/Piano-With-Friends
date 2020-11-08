@@ -1,5 +1,5 @@
 <template>
-<!-- This is the component where our piano should go -->
+  <!-- This is the component where our piano should go -->
   <v-container>
     <v-row class="text-center">
       <v-col cols="12">

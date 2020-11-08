@@ -17,7 +17,7 @@
           min-width="100"
           width="100"
         >
-        Piano With Friends
+          Piano With Friends
         </div>
       </div>
 
@@ -51,20 +51,24 @@
                 Piano With Friends
               </h1>
               <p>Enter your username</p>
-              <v-form ref="usernameLogin" @submit="submit" onSubmit="return false;">
+              <v-form
+                ref="usernameLogin"
+                @submit="submit"
+                onSubmit="return false;"
+              >
                 <v-text-field
                   v-model="connection.username"
                   label="Username"
                 ></v-text-field>
-                <v-btn 
-                  depressed 
+                <v-btn
+                  depressed
                   ref="submitButton"
                   color="primary"
-                  :loading = "loading"
-                  :disabled = "loading"
-                  @click = "loader = 'loading'"
-                > 
-                  Submit 
+                  :loading="loading"
+                  :disabled="loading"
+                  @click="loader = 'loading'"
+                >
+                  Submit
                 </v-btn>
               </v-form>
             </v-col>
@@ -93,32 +97,38 @@ export default {
       username: ""
     },
     serverUrl: "localhost:8000",
-    isConnected: false, 
+    isConnected: false,
     loader: null,
     loading: false
   }),
   mounted: function() {
-    this.setUsername()
+    this.setUsername();
+    this.listenToWebsocketMessage();
   },
   watch: {
-    loader () {
-      const l = this.loader
-      this[l] = !this[l]
-      this.setUsername()
-      setTimeout(() => (this[l] = false), 3000)
+    loader() {
+      const l = this.loader;
+      this[l] = !this[l];
+      this.setUsername();
+      setTimeout(() => (this[l] = false), 3000);
     }
   },
   methods: {
-    setUsername() {
-        if (this.connection.username != "") {
-          this.setWebsocketConnection()
-          this.setIsConnected()
-        }
+    // This is just so when we hit "enter" on the form, the page doesn't reload
+    submit() {
+      return false;
     },
+    // this is called on mount => sets connection and then is connected so we know to move to piano page
+    setUsername() {
+      if (this.connection.username != "") {
+        this.setWebsocketConnection();
+        this.setIsConnected();
+      }
+    },
+    // set is connected to true
     setIsConnected() {
       if (this.isConnected == false) {
-        this.isConnected = !this.isConnected
-        console.log(this.isConnected)
+        this.isConnected = !this.isConnected;
       }
     },
     setWebsocketConnection() {
@@ -127,7 +137,6 @@ export default {
         const socketConnection = new WebSocket(
           "ws://" + this.serverUrl + "/ws/" + this.connection.username
         );
-        console.log(socketConnection)
         this.connection.ws = socketConnection;
       }
 
@@ -135,8 +144,61 @@ export default {
         this.onWebsocketOpen(event);
       });
     },
+    // On websocket open
     onWebsocketOpen(event) {
       console.log(event, "connected to websocket!");
+    },
+    // Make sure payload is not empty
+    checkIfValidPayload(socketPayload) {
+      if (!socketPayload.eventPayload) {
+        return;
+      }
+    },
+    // listen to response from the websocket
+    listenToWebsocketMessage() {
+      // If we have no connection, we can't listen
+      if (this.connection.ws === null) {
+        return;
+      }
+
+      this.connection.ws.onclose = () => {
+        console.log("Your connection is closed");
+      };
+
+      this.connection.ws.onmessage = messageEvent => {
+        const socketPayload = JSON.parse(messageEvent.data);
+        switch (socketPayload.eventName) {
+          // Join case
+          case "join": {
+            this.checkIfValidPayload(socketPayload);
+
+            console.log(socketPayload.eventPayload, "has joined the chat");
+            break;
+          }
+          case "disconnect": {
+            this.checkIfValidPayload(socketPayload);
+
+            console.log(socketPayload.eventPayload, "has left the chat");
+            break;
+          }
+          case "keyBdPressResponse": {
+            this.checkIfValidPayload(socketPayload);
+
+            const messageContent = socketPayload.eventPlayload;
+            const sentBy = messageContent.username;
+            const actualMessage = messageContent.message;
+
+            console.log({
+              messageFrom: sentBy,
+              message: actualMessage
+            });
+            break;
+          }
+          default: {
+            break;
+          }
+        }
+      };
     }
   }
 };
