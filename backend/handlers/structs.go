@@ -4,6 +4,7 @@ package handlers
 import (
 	"github.com/gorilla/websocket"
 )
+
 /*
 	EventName: ('join'/'disconnect'/'keyBdPressResponse') JSON which contains the eventname
 	EventPayload: JSON interface which contains our payload

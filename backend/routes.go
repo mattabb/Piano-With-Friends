@@ -1,27 +1,25 @@
 package main
 
-
 import (
 	// Internal Dependencies
+	"./handlers"
 	"log"
 	"net/http"
-	"./handlers"
 	// External Dependencies
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"math/rand"
 	"strconv"
-
 )
 
 /*
 * @function setStaticFolder
-* @description 
+* @description
 * Sets static folder where our JS is held... not sure if we need this tbh
 
 * @param {*mux.Router} route => mux router
 * @return N/A
-*/
+ */
 func setStaticFolder(route *mux.Router) {
 	// Serve all of our JS
 	fs := http.FileServer(http.Dir("../UI/src"))
@@ -30,16 +28,16 @@ func setStaticFolder(route *mux.Router) {
 
 /*
 * @function addTrailingIntToUser
-* @description 
+* @description
 * Adds trailing integers to users so we don't have users with the same username
 
 * @param string username
 * @return string username1234
-*/
+ */
 func addTrailingIntToUser(username string) string {
 	for i := 0; i < 4; i++ {
 		randInt := rand.Intn(10)
-		randIntString := strconv.Itoa(randInt) 
+		randIntString := strconv.Itoa(randInt)
 		username += randIntString
 	}
 	return username
@@ -47,13 +45,13 @@ func addTrailingIntToUser(username string) string {
 
 /*
 * @function AddAppRoutes
-* @description 
+* @description
 * Adds app routes/endpoints to listen to for our server
 
 * @exported: true
 * @param {*mux.Router} route => mux router
 * @return N/A
-*/
+ */
 func AddAppRoutes(route *mux.Router) {
 
 	setStaticFolder(route)
@@ -61,10 +59,10 @@ func AddAppRoutes(route *mux.Router) {
 	// Implement websockets and handlers
 	pool := handlers.NewPool()
 	go pool.Run()
-	
+
 	// Websocket handling
 	route.HandleFunc("/ws/{username}", func(responseWriter http.ResponseWriter, request *http.Request) {
-		
+
 		var upgrader = websocket.Upgrader{
 			// This allows connections from anywhere... the logic commented out below can restrict
 			// origins, in our case we would want to restrict to our website homepage as we get further

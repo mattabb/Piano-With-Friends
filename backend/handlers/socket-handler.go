@@ -2,14 +2,12 @@ package handlers
 
 
 import (
-	//"bytes"
-	//"encoding/json"
+	"bytes"
 	"log"
-	//"time"
+	"time"
 
 	"github.com/gorilla/websocket"
-	// "encoding/json"
-	// "encoding/gob" Currently configured to send via JSON in structs.go... hopefully we can change this to gob somehow, if not nbd
+	"encoding/json"
 )
 
 
@@ -161,14 +159,30 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 */
 func (c *Client) readPump() {
 	// Read from websocket
-	// var socketEventPayload SocketEventStruct
+	var socketEventPayload SocketEventStruct
 
-	// defer unRegisterAndCloseConnection(c)
+	defer unRegisterAndCloseConnection(c)
 
-	// for {
-	// 	_, payload, err := c.webSocketConnection.ReadMessage()
-		// decode using gob
-	// }
+	for {
+		_, payload, err := c.webSocketConnection.ReadMessage()
+		
+		decoder := json.NewDecoder(bytes.NewReader(payload))
+		decoderErr := decoder.Decode(&socketEventPayload)
+		log.Print(socketEventPayload)
+
+		if decoderErr != nil {
+			log.Printf("error: %v", decoderErr)
+			break
+		}
+
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("error ===: %v", err)
+			}
+			break
+		}
+		handleSocketPayloadEvents(c, socketEventPayload)
+	}
 }
 
 /*
@@ -186,13 +200,41 @@ func (c *Client) writePump() {
 	// 	ticket.Stop()
 	// 	c.webSocketConnection.Close()
 	// }()
-	// for {
-	// 	select {
-	// 	case payload, ok := <- c.send:
-	// 		reqBodyBytes := new(bytes.Buffer)
-	// 		// Encode and send our data
-	// 	}
-	// }
+	for {
+		select {
+		case payload, ok := <- c.send:
+			// Encode our payload
+			reqBodyBytes := new(bytes.Buffer)
+			json.NewEncoder(reqBodyBytes).Encode(payload)
+			finalPayload := reqBodyBytes.Bytes()
+
+			
+			c.webSocketConnection.SetWriteDeadline(time.Now())
+			if !ok {
+				c.webSocketConnection.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+
+			w, err := c.webSocketConnection.NextWriter(websocket.TextMessage)
+			if err != nil {
+				return
+			}
+
+			w.Write(finalPayload)
+
+			n := len(c.send)
+			for i := 0; i < n; i++ {
+				json.NewEncoder(reqBodyBytes).Encode(<-c.send)
+				w.Write(reqBodyBytes.Bytes())
+			}
+
+			if err := w.Close(); err != nil {
+				return
+			}
+
+			
+		}
+	}
 }
 
 /*
