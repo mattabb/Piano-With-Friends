@@ -27,7 +27,14 @@ Enter description -- includes mux, websockets
 
 ## Setup
 ### Front-End
+
 Navigate to the UI directory
+
+
+First download all the npm dependencies using:
+```bash
+$npm install
+```
 
 To run the development server
 ```bash 
