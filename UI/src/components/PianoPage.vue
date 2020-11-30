@@ -1,102 +1,55 @@
 <template>
   <!-- This is the component where our piano should go -->
-  <v-container>
-    <v-row class="text-center">
-      <v-col cols="12">
-        <v-img
-          :src="require('../assets/piano-logo.png')"
-          class="my-3"
-          contain
-          height="200"
-        />
-      </v-col>
-
-      <v-col class="mb-4">
-        <h1 class="title-font display-2 font-weight-bold mb-3">
-          Piano and Friends
-        </h1>
-
-        <p class="subheading font-weight-regular">
-          For help and collaboration with other Vuetify developers,
-          <br />please join our online
-          <a href="https://community.vuetifyjs.com" target="_blank"
-            >Discord Community</a
-          >
-        </p>
-      </v-col>
-
-      <!-- <v-col class="mb-5" cols="12">
-        <h2 class="headline font-weight-bold mb-3">
-          Important Links
-        </h2>
-
-        <v-row justify="center">
-          <a
-            v-for="(link, i) in importantLinks"
-            :key="i"
-            :href="link.href"
-            class="subheading mx-3"
-            target="_blank"
-          >
-            {{ link.text }}
-          </a>
-        </v-row>
-      </v-col> -->
-
-      <!-- <v-col class="mb-5" cols="12">
-        <h2 class="headline font-weight-bold mb-3">
-          Ecosystem
-        </h2>
-
-        <v-row justify="center">
-          <a
-            v-for="(eco, i) in ecosystem"
-            :key="i"
-            :href="eco.href"
-            class="subheading mx-3"
-            target="_blank"
-          >
-            {{ eco.text }}
-          </a>
-        </v-row>
-      </v-col> -->
-    </v-row>
-  </v-container>
+  <head>
+  <h1 class="title">Distributed Systems Piano</h1>
+  <h1>{{ playKeyboard }}</h1>
+  </head>
 </template>
 
 <script>
+
+import * as playKeyboardjs from '../assets/js/playKeyboard.js'
+// import * as audiosynthjs from '../assets/js/audiosynth.js'
+
 export default {
+
   name: "PianoPage",
 
-  data: () => ({
-    importantLinks: [
-      {
-        text: "Documentation",
-        href: "https://vuetifyjs.com"
-      },
-      {
-        text: "Chat",
-        href: "https://community.vuetifyjs.com"
-      },
-      {
-        text: "Made with Vuetify",
-        href: "https://madewithvuejs.com/vuetify"
-      },
-      {
-        text: "Twitter",
-        href: "https://twitter.com/vuetifyjs"
-      },
-      {
-        text: "Articles",
-        href: "https://medium.com/vuetify"
-      }
-    ]
-  })
+  data() {
+    return {
+      playKeyboard: playKeyboardjs.playKeyboard
+    }
+  },
 };
 </script>
 
-<style scoped>
-.title-font {
-  font-family: "Lobster", cursive !important;
-}
+
+<style>
+
+  body { font-family: Georgia; text-align: center; background-color: #464646}
+
+	.banner {width: 1200px; height: 340px; object-fit: cover; object-position: 0px -90px;}	
+
+  .title { color: #ffffff; font-size: 40px; text-shadow: 0px -1px 5px #F5F408;}
+
+  .content {background-color: #FAD7A0; margin: 20px; padding: 30px; border-style: double; border-width: 5px; font-size: 18px; text-align: left; width: 1200px; display: inline-block; }
+
+	.key { position: absolute; font-family: Helvetica; font-weight: 100; font-size: 12px;
+		border: 1px solid rgba(32,32,32,0.2);
+		border-radius: 0px 0px 5px 5px;
+		cursor:pointer;
+		box-shadow: 0px 5px 1px rgba(32,32,32,0.2);
+		-webkit-transition: margin 0.05s ease, background-color 0.05s ease, box-shadow 0.05s ease; }
+	.key:hover { background-color: #71DB90; }
+		
+	.key .label { position: absolute; bottom: 15px; text-align: center; left: 0px; right: 0px; }
+
+	.keyLabel {font-weight: 900; text-shadow: 0px -1px 5px #EBF508; font-size: 15px;}
+
+	.black { background-color: rgb(32,32,32); color: #ffffff; z-index: 1; text-shadow: 0px -1px 1px #FF0000; }
+	
+	.white { background-color: #F2F2DE; color: #3008F5; z-index: 0; text-shadow: 0px 1px 1px #08E8F5; }
+	
+	.keyboard-holder { margin: 30px auto; height: 200px; position:relative; user-select:none; -webkit-user-select:none;-moz-user-select:none;-o-user-select:none; }
+
 </style>

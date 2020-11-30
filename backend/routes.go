@@ -2,14 +2,17 @@ package main
 
 import (
 	// Internal Dependencies
-	"./handlers"
 	"log"
 	"net/http"
+
+	"./handlers"
+
 	// External Dependencies
-	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
 	"math/rand"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 /*
