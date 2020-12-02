@@ -141,6 +141,8 @@ export default {
         this.isConnected = !this.isConnected;
       }
     },
+    // This checks if the last 5 digits are numbers, and if not adds them
+    // this is so if we fail a connection once, we don't keep adding 5 digits to the username
     createCompleteUsername(username) {
       var lastFive = username.substr(username.length - 5);
       var lastFiveInt = Number(lastFive)
@@ -152,6 +154,8 @@ export default {
         this.connection.username = username  
       }
     },
+    // creates the complete username and sets the connection
+    // shows error message if connection is not made
     setWebsocketConnection() { 
       this.createCompleteUsername(this.connection.username)
 
