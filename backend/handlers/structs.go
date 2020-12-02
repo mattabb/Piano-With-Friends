@@ -1,6 +1,5 @@
 package handlers
 
-
 import (
 	"github.com/gorilla/websocket"
 )
@@ -10,11 +9,11 @@ import (
 	EventPayload: JSON interface which contains our payload
 */
 type SocketEventStruct struct {
-	EventName string `json:"eventName"`
+	EventName    string      `json:"eventName"`
 	EventPayload interface{} `json:"eventPayload"`
 }
 
-/* 
+/*
 	Client is a middleman between the websocket connection and the pool
 	pool: *Pool that client is associated with
 	webSocketConnection: connection to websocket
@@ -22,13 +21,13 @@ type SocketEventStruct struct {
 	username: username associated to client
 */
 type Client struct {
-	pool 				*Pool
+	pool                *Pool
 	webSocketConnection *websocket.Conn
-	send 				chan SocketEventStruct
-	username	 		string
+	send                chan SocketEventStruct
+	username            string
 }
 
-/* 
+/*
 	Maintains the set of active clients and broadcasts messages
 	clients: map of clients with corresponding boolean values to tell whether connected
 	broadcoat: channel to broadcoast bytes
@@ -36,8 +35,8 @@ type Client struct {
 	unregister: channel for clients that are unregistering
 */
 type Pool struct {
-	clients map[*Client]bool
-	broadcast chan []byte
-	register chan *Client
+	clients    map[*Client]bool
+	broadcast  chan []byte
+	register   chan *Client
 	unregister chan *Client
 }

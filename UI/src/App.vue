@@ -147,6 +147,16 @@ export default {
     // On websocket open
     onWebsocketOpen(event) {
       console.log(event, "connected to websocket!");
+
+      // this is how we send messages to the backend 
+      this.connection.ws.send(JSON.stringify({
+        EventName: "keyboardPress",
+        EventPayload: {
+          username: this.connection.username,
+          message: "abcdefgh"
+        }
+      }));
+      
     },
     // Make sure payload is not empty
     checkIfValidPayload(socketPayload) {
