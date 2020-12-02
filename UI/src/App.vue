@@ -66,7 +66,7 @@
                   color="primary"
                   :loading="loading"
                   :disabled="loading"
-                  @click="loader = 'loading'"
+                  @click="loader = 'loading'; setUsername();"
                 >
                   Submit
                 </v-btn>
@@ -74,6 +74,12 @@
             </v-col>
           </v-row>
         </v-card>
+        <v-alert v-if="connectionError == true"
+          dense
+          outlined
+          type="error">
+            Error when connecting to the server, please try again later.
+        </v-alert>
       </div>
       <div v-else>
         <PianoPage />
@@ -98,18 +104,15 @@ export default {
     },
     serverUrl: "localhost:8000",
     isConnected: false,
+    connectionError: false,
     loader: null,
     loading: false
   }),
-  mounted: function() {
-    this.setUsername();
-    this.listenToWebsocketMessage();
-  },
   watch: {
     loader() {
       const l = this.loader;
       this[l] = !this[l];
-      this.setUsername();
+      this.loader = null;
       setTimeout(() => (this[l] = false), 3000);
     }
   },
@@ -121,9 +124,16 @@ export default {
     // this is called on mount => sets connection and then is connected so we know to move to piano page
     setUsername() {
       if (this.connection.username != "") {
+        // Set to false if it is true => This is so we can try to connect multiple times
+        if (this.connectionError == true) {
+          this.setConnectionError();
+        }
         this.setWebsocketConnection();
-        this.setIsConnected();
       }
+    },
+    // Set connection error to opposite
+    setConnectionError() {
+      this.connectionError = !this.connectionError
     },
     // set is connected to true
     setIsConnected() {
@@ -131,7 +141,20 @@ export default {
         this.isConnected = !this.isConnected;
       }
     },
-    setWebsocketConnection() {
+    createCompleteUsername(username) {
+      var lastFive = username.substr(username.length - 5);
+      var lastFiveInt = Number(lastFive)
+      if (!Number.isInteger(lastFiveInt)) {
+        for (var i = 0; i < 5; i++) {
+          var randomNum = Math.floor((Math.random() * 10) + 1);
+          username = username + randomNum;
+        }
+        this.connection.username = username  
+      }
+    },
+    setWebsocketConnection() { 
+      this.createCompleteUsername(this.connection.username)
+
       // Ask for username and connect to websocket with it
       if (window["WebSocket"]) {
         const socketConnection = new WebSocket(
@@ -140,6 +163,11 @@ export default {
         this.connection.ws = socketConnection;
       }
 
+      this.connection.ws.addEventListener("error", event => {
+        console.log("Error connecting:", event);
+        this.setConnectionError();
+      })
+
       this.connection.ws.addEventListener("open", event => {
         this.onWebsocketOpen(event);
       });
@@ -147,7 +175,8 @@ export default {
     // On websocket open
     onWebsocketOpen(event) {
       console.log(event, "connected to websocket!");
-
+      this.setIsConnected();
+      this.listenToWebsocketMessage();
       // this is how we send messages to the backend 
       this.connection.ws.send(JSON.stringify({
         EventName: "keyboardPress",

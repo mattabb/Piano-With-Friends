@@ -8,8 +8,6 @@ import (
 	"github.com/mattabb/server/handlers"
 
 	// External Dependencies
-	"math/rand"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -29,7 +27,7 @@ func setStaticFolder(route *mux.Router) {
 	route.PathPrefix("/UI/src").Handler(http.StripPrefix("/UI/src", fs))
 }
 
-/*
+/* DEPRECATED
 * @function addTrailingIntToUser
 * @description
 * Adds trailing integers to users so we don't have users with the same username
@@ -37,14 +35,14 @@ func setStaticFolder(route *mux.Router) {
 * @param string username
 * @return string username1234
  */
-func addTrailingIntToUser(username string) string {
-	for i := 0; i < 4; i++ {
-		randInt := rand.Intn(10)
-		randIntString := strconv.Itoa(randInt)
-		username += randIntString
-	}
-	return username
-}
+// func addTrailingIntToUser(username string) string {
+// 	for i := 0; i < 4; i++ {
+// 		randInt := rand.Intn(10)
+// 		randIntString := strconv.Itoa(randInt)
+// 		username += randIntString
+// 	}
+// 	return username
+// }
 
 /*
 * @function AddAppRoutes
@@ -79,7 +77,7 @@ func AddAppRoutes(route *mux.Router) {
 
 		username := mux.Vars(request)["username"]
 
-		username = addTrailingIntToUser(username)
+		// username = addTrailingIntToUser(username)
 
 		connection, err := upgrader.Upgrade(responseWriter, request, nil)
 		if err != nil {
