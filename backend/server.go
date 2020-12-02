@@ -4,6 +4,7 @@ import (
 	// Internal Dependencies
 	"log"
 	"net/http"
+	"os"
 
 	// External Dependencies
 	"github.com/gorilla/mux"
@@ -21,6 +22,11 @@ func main() {
 	// Add routes
 	AddAppRoutes(router)
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+
 	// Port our back-end will connect to
-	log.Fatal(http.ListenAndServe(":8000", router))
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }
