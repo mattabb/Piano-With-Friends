@@ -17,7 +17,7 @@ func main() {
 	port := "8000"
 
 	// Whitelists our front-end
-	router.Host("localhost:8080")
+	// router.Host("localhost:8080")
 
 	// Add routes
 	AddAppRoutes(router)

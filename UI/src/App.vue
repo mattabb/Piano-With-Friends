@@ -66,7 +66,10 @@
                   color="primary"
                   :loading="loading"
                   :disabled="loading"
-                  @click="loader = 'loading'; setUsername();"
+                  @click="
+                    loader = 'loading';
+                    setUsername();
+                  "
                 >
                   Submit
                 </v-btn>
@@ -74,11 +77,8 @@
             </v-col>
           </v-row>
         </v-card>
-        <v-alert v-if="connectionError == true"
-          dense
-          outlined
-          type="error">
-            Error when connecting to the server, please try again later.
+        <v-alert v-if="connectionError == true" dense outlined type="error">
+          Error when connecting to the server, please try again later.
         </v-alert>
       </div>
       <div v-else>
@@ -102,7 +102,7 @@ export default {
       ws: null,
       username: ""
     },
-    serverUrl: "localhost:8000",
+    serverUrl: "piano-with-friends.us-east-2.elasticbeanstalk.com",
     isConnected: false,
     connectionError: false,
     loader: null,
@@ -133,7 +133,7 @@ export default {
     },
     // Set connection error to opposite
     setConnectionError() {
-      this.connectionError = !this.connectionError
+      this.connectionError = !this.connectionError;
     },
     // set is connected to true
     setIsConnected() {
@@ -145,19 +145,19 @@ export default {
     // this is so if we fail a connection once, we don't keep adding 5 digits to the username
     createCompleteUsername(username) {
       var lastFive = username.substr(username.length - 5);
-      var lastFiveInt = Number(lastFive)
+      var lastFiveInt = Number(lastFive);
       if (!Number.isInteger(lastFiveInt)) {
         for (var i = 0; i < 5; i++) {
-          var randomNum = Math.floor((Math.random() * 10) + 1);
+          var randomNum = Math.floor(Math.random() * 10 + 1);
           username = username + randomNum;
         }
-        this.connection.username = username  
+        this.connection.username = username;
       }
     },
     // creates the complete username and sets the connection
     // shows error message if connection is not made
-    setWebsocketConnection() { 
-      this.createCompleteUsername(this.connection.username)
+    setWebsocketConnection() {
+      this.createCompleteUsername(this.connection.username);
 
       // Ask for username and connect to websocket with it
       if (window["WebSocket"]) {
@@ -170,7 +170,7 @@ export default {
       this.connection.ws.addEventListener("error", event => {
         console.log("Error connecting:", event);
         this.setConnectionError();
-      })
+      });
 
       this.connection.ws.addEventListener("open", event => {
         this.onWebsocketOpen(event);
@@ -181,15 +181,16 @@ export default {
       console.log(event, "connected to websocket!");
       this.setIsConnected();
       this.listenToWebsocketMessage();
-      // this is how we send messages to the backend 
-      this.connection.ws.send(JSON.stringify({
-        EventName: "keyboardPress",
-        EventPayload: {
-          username: this.connection.username,
-          message: "abcdefgh"
-        }
-      }));
-      
+      // this is how we send messages to the backend
+      this.connection.ws.send(
+        JSON.stringify({
+          EventName: "keyboardPress",
+          EventPayload: {
+            username: this.connection.username,
+            message: "abcdefgh"
+          }
+        })
+      );
     },
     // Make sure payload is not empty
     checkIfValidPayload(socketPayload) {
