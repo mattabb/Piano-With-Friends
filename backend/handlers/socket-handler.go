@@ -33,9 +33,7 @@ func CreateNewSocketUser(pool *Pool, connection *websocket.Conn, username string
 	client.pool.register <- client
 	log.Print("Socket user created with username:", username)
 
-	// Write to the websocket (This is gonna contain the logic where we write to the websocket)
 	go client.writePump()
-	// Read from the websocket (This is gonna contain the logic where we READ from the websocket)
 	go client.readPump()
 }
 
@@ -147,6 +145,7 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 		BroadcastSocketEventToAllClient(client.pool, socketEventResponse)
 	}
 
+	// TODO:
 	// add recording here
 	// case "recordStart":
 	//	call function here to start recording that is inside recorder folder
@@ -156,37 +155,55 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 }
 
 /*
+* @function readJSON
+* @description
+* Reads JSON from websocket, creates a JSON decoder and decodes data into payload
+
+* @family Client
+* @return socketEventPayload, error
+ */
+func (c *Client) readJSON() (SocketEventStruct, error) {
+	var socketEventPayload SocketEventStruct
+
+	_, payload, err := c.webSocketConnection.ReadMessage()
+	decoder := json.NewDecoder(bytes.NewReader(payload))
+	decoderErr := decoder.Decode(&socketEventPayload)
+
+	log.Print("read JSON... event payload from websocket is: ", socketEventPayload)
+
+	if decoderErr != nil {
+		log.Printf("error: %v", decoderErr)
+		return socketEventPayload, decoderErr
+	}
+
+	if err != nil {
+		if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+			log.Printf("error ===: %v", err)
+		}
+		return socketEventPayload, err
+	}
+
+	return socketEventPayload, nil
+}
+
+/*
 * @function readPump
 * @description
-* Reads data from websocket (currently configured for JSON... we want GOB if possible)
+* Reads data from websocket
 
 * @family Client
 * @return N/A
  */
 func (c *Client) readPump() {
 	// Read from websocket
-	var socketEventPayload SocketEventStruct
-
 	defer unRegisterAndCloseConnection(c)
 
 	for {
-		_, payload, err := c.webSocketConnection.ReadMessage()
-
-		decoder := json.NewDecoder(bytes.NewReader(payload))
-		decoderErr := decoder.Decode(&socketEventPayload)
-		log.Print("read pump... event payload from websocket is: ", socketEventPayload)
-
-		if decoderErr != nil {
-			log.Printf("error: %v", decoderErr)
-			break
-		}
-
+		socketEventPayload, err := c.readJSON()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error ===: %v", err)
-			}
 			break
 		}
+
 		handleSocketPayloadEvents(c, socketEventPayload)
 	}
 }
@@ -200,7 +217,6 @@ func (c *Client) readPump() {
 * @return N/A
  */
 func (c *Client) writePump() {
-	// Write to websocket
 	// ticker := time.NewTicker(someDelay)
 	// defer func() {
 	// 	ticket.Stop()
@@ -213,6 +229,7 @@ func (c *Client) writePump() {
 
 			log.Print("Hit writepump, payload is: ", payload)
 
+			// TODO: Separate this into a writeJSON() function
 			// Encode our payload
 			reqBodyBytes := new(bytes.Buffer)
 			json.NewEncoder(reqBodyBytes).Encode(payload)
@@ -221,21 +238,19 @@ func (c *Client) writePump() {
 			// Write now
 			c.webSocketConnection.SetWriteDeadline(time.Now())
 
-			// If something is wrong (not ok) => close message
 			if !ok {
 				c.webSocketConnection.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
 
-			// Writer for websocket => Similar to reader and writers for input/output
 			w, err := c.webSocketConnection.NextWriter(websocket.TextMessage)
 			if err != nil {
 				return
 			}
 
-			// Function to write to the front-end
 			w.Write(finalPayload)
 
+			// confused by this... not sure what it's for => Will be easier to debug when broadcast function error is fixed
 			n := len(c.send)
 			for i := 0; i < n; i++ {
 				json.NewEncoder(reqBodyBytes).Encode(<-c.send)
