@@ -31,7 +31,7 @@ func CreateNewSocketUser(pool *Pool, connection *websocket.Conn, username string
 	}
 
 	client.pool.register <- client
-	log.Println("Socket user created with username:", username)
+	log.Print("Socket user created with username:", username)
 
 	// Write to the websocket (This is gonna contain the logic where we write to the websocket)
 	go client.writePump()
@@ -52,6 +52,7 @@ func CreateNewSocketUser(pool *Pool, connection *websocket.Conn, username string
  */
 func HandleUserRegisterEvent(pool *Pool, client *Client) {
 	pool.clients[client] = true
+	log.Println("handleUserReg function, pool.clients is:", pool.clients)
 	handleSocketPayloadEvents(client, SocketEventStruct{
 		EventName:    "join",
 		EventPayload: client.username,
@@ -94,10 +95,13 @@ func HandleUserDisconnectEvent(pool *Pool, client *Client) {
 * @return N/A
  */
 func BroadcastSocketEventToAllClient(pool *Pool, payload SocketEventStruct) {
+
+	log.Print("Hit broadcast function... pool is:,", pool)
 	for client := range pool.clients {
 		select {
 		case client.send <- payload:
 		default:
+			log.Println("hit default")
 			close(client.send)
 			delete(pool.clients, client)
 		}
@@ -126,7 +130,7 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 
 	// When someone disconnects
 	case "disconnect:":
-		log.Printf("Disconnect event triggered")
+		log.Print("Disconnect event triggered")
 		BroadcastSocketEventToAllClient(client.pool, SocketEventStruct{
 			EventName:    "disconnect",
 			EventPayload: socketEventPayload.EventPayload,
@@ -134,7 +138,7 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 
 	// When someone presses the keyboard
 	case "keyboardPress":
-		log.Printf("keyboard press event triggered")
+		log.Print("keyboard press event triggered")
 		socketEventResponse.EventName = "keyBdPressResponse"
 		socketEventResponse.EventPayload = map[string]interface{}{
 			"username": client.username,
@@ -170,7 +174,7 @@ func (c *Client) readPump() {
 
 		decoder := json.NewDecoder(bytes.NewReader(payload))
 		decoderErr := decoder.Decode(&socketEventPayload)
-		log.Print(socketEventPayload)
+		log.Print("read pump... event payload from websocket is: ", socketEventPayload)
 
 		if decoderErr != nil {
 			log.Printf("error: %v", decoderErr)
@@ -206,6 +210,9 @@ func (c *Client) writePump() {
 	for {
 		select {
 		case payload, ok := <-c.send:
+
+			log.Print("Hit writepump, payload is: ", payload)
+
 			// Encode our payload
 			reqBodyBytes := new(bytes.Buffer)
 			json.NewEncoder(reqBodyBytes).Encode(payload)

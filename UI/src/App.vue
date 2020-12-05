@@ -34,7 +34,7 @@
     </v-app-bar>
 
     <v-main>
-      <div v-if="isConnected == false" class="d-flex flex-column align-center">
+      <div v-if="!isConnected" class="d-flex flex-column align-center">
         <v-card width="400">
           <v-row class="text-center">
             <v-col cols="12">
@@ -77,12 +77,27 @@
             </v-col>
           </v-row>
         </v-card>
-        <v-alert v-if="connectionError == true" dense outlined type="error">
+        <v-alert v-if="connectionErr" dense outlined type="error">
           Error when connecting to the server, please try again later.
+        </v-alert>
+        <v-alert v-if="invalidUsername" dense outlined type="error">
+          Please enter a valid username, empty usernames are not accepted.
         </v-alert>
       </div>
       <div v-else>
         <Piano :octave-start="1" :octave-end="7" />
+        <v-btn
+          depressed
+          ref="sendButton"
+          color="primary"
+          :loading="loading"
+          :disabled="loading"
+          @click="
+            sendWebsocketMessage({eventName: 'keyboardPress', message: 'testMessage'})
+          "
+          >
+          Send
+        </v-btn>
       </div>
     </v-main>
   </v-app>
@@ -99,6 +114,7 @@ export default {
     //PianoPage,
     Piano
   },
+
   data: () => ({
     connection: {
       ws: null,
@@ -110,6 +126,7 @@ export default {
     loader: null,
     loading: false
   }),
+
   watch: {
     loader() {
       const l = this.loader;
@@ -118,37 +135,43 @@ export default {
       setTimeout(() => (this[l] = false), 3000);
     }
   },
+
+  computed: {
+    invalidUsername() {
+      return this.connection.username == "";
+    },
+
+    connectionErr() {
+      return this.connectionError && this.connection.username != "";
+    }
+  },
+
   methods: {
     // This is just so when we hit "enter" on the form, the page doesn't reload
     submit() {
       return false;
     },
+
     // this is called on mount => sets connection and then is connected so we know to move to piano page
     setUsername() {
       if (this.connection.username != "") {
-        // Set to false if it is true => This is so we can try to connect multiple times
-        if (this.connectionError == true) {
+        if (this.connectionError) {
           this.setConnectionError();
         }
         this.setWebsocketConnection();
       }
     },
-    // Set connection error to opposite
+
     setConnectionError() {
       this.connectionError = !this.connectionError;
     },
-    // set is connected to true
+
     setIsConnected() {
-      if (this.isConnected == false) {
-        this.isConnected = !this.isConnected;
-      }
+      this.isConnected = !this.isConnected;
     },
-    // This checks if the last 5 digits are numbers, and if not adds them
-    // this is so if we fail a connection once, we don't keep adding 5 digits to the username
+
     createCompleteUsername(username) {
-      var lastFive = username.substr(username.length - 5);
-      var lastFiveInt = Number(lastFive);
-      if (!Number.isInteger(lastFiveInt)) {
+      if (!this.verifyValidUser(username)) {
         for (var i = 0; i < 5; i++) {
           var randomNum = Math.floor(Math.random() * 10 + 1);
           username = username + randomNum;
@@ -156,12 +179,23 @@ export default {
         this.connection.username = username;
       }
     },
-    // creates the complete username and sets the connection
-    // shows error message if connection is not made
+
+    verifyValidUser(username) {
+      var lastFive = username.substr(username.length - 5);
+      var lastFiveInt = Number(lastFive);
+      console.log(lastFiveInt)
+      if (!Number.isInteger(lastFiveInt)) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+
+    /* All Websocket Methods are below: */
+
     setWebsocketConnection() {
       this.createCompleteUsername(this.connection.username);
 
-      // Ask for username and connect to websocket with it
       if (window["WebSocket"]) {
         const socketConnection = new WebSocket(
           "ws://" + this.serverUrl + "/ws/" + this.connection.username
@@ -169,51 +203,36 @@ export default {
         this.connection.ws = socketConnection;
       }
 
-      this.connection.ws.addEventListener("error", event => {
-        console.log("Error connecting:", event);
-        this.setConnectionError();
-      });
+      this.setWebsocketErrorListener();
 
+      this.setWebsocketOpenListener();
+    },
+
+    setWebsocketErrorListener() {
+      this.connection.ws.addEventListener("error", event => {
+        console.log("Error connection:", event);
+        this.setConnectionError();
+        this.setIsConnected();
+      });
+    },
+
+    setWebsocketOpenListener() {
       this.connection.ws.addEventListener("open", event => {
         this.onWebsocketOpen(event);
       });
     },
-    // On websocket open
-    onWebsocketOpen(event) {
-      console.log(event, "connected to websocket!");
-      this.setIsConnected();
-      this.listenToWebsocketMessage();
-      // this is how we send messages to the backend
-      this.connection.ws.send(
-        JSON.stringify({
-          EventName: "keyboardPress",
-          EventPayload: {
-            username: this.connection.username,
-            message: "abcdefgh"
-          }
-        })
-      );
-    },
-    // Make sure payload is not empty
-    checkIfValidPayload(socketPayload) {
-      if (!socketPayload.eventPayload) {
-        return;
-      }
-    },
-    // listen to response from the websocket
-    listenToWebsocketMessage() {
-      // If we have no connection, we can't listen
-      if (this.connection.ws === null) {
-        return;
-      }
 
+    setWebsocketCloseListener() {
       this.connection.ws.onclose = err => {
         console.log("Your connection is closed");
         console.log(err);
       };
+    },
 
+    setWebsocketMessageListener() {
       this.connection.ws.onmessage = messageEvent => {
         const socketPayload = JSON.parse(messageEvent.data);
+
         switch (socketPayload.eventName) {
           // Join case
           case "join": {
@@ -231,7 +250,7 @@ export default {
           case "keyBdPressResponse": {
             this.checkIfValidPayload(socketPayload);
 
-            const messageContent = socketPayload.eventPlayload;
+            const messageContent = socketPayload.EventPayload;
             const sentBy = messageContent.username;
             const actualMessage = messageContent.message;
 
@@ -246,6 +265,52 @@ export default {
           }
         }
       };
+    },
+
+    onWebsocketOpen(event) {
+      console.log(event, "connected to websocket!");
+
+      this.setIsConnected();
+
+      this.setWebsocketCloseListener();
+
+      this.listenToWebsocketMessage();
+
+      var mockMessage = {
+        eventName: "keyboardPress",
+        message: "abcdefgh"
+      };
+      this.sendWebsocketMessage(mockMessage);
+    },
+
+    // this is how we send messages to the backend
+    sendWebsocketMessage(socketPayload) {
+      this.connection.ws.send(
+        JSON.stringify({
+          EventName: socketPayload.eventName,
+          EventPayload: {
+            username: this.connection.username,
+            message: socketPayload.EventPayload
+          }
+        })
+      );
+    },
+
+    // Make sure payload is not empty
+    checkIfValidPayload(socketPayload) {
+      if (!socketPayload.EventPayload) {
+        return;
+      }
+    },
+
+    // listen to response from the websocket
+    listenToWebsocketMessage() {
+      // If we have no connection, we can't listen
+      if (this.connection.ws === null) {
+        return;
+      }
+
+      this.setWebsocketMessageListener();
     }
   }
 };
