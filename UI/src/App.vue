@@ -82,27 +82,29 @@
         </v-alert>
       </div>
       <div v-else>
-        <PianoPage />
+        <Piano :octave-start="1" :octave-end="7" />
       </div>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import PianoPage from "./components/PianoPage";
+//import PianoPage from "./components/PianoPage";
+import Piano from "./components/Piano";
 
 export default {
   name: "App",
 
   components: {
-    PianoPage
+    //PianoPage,
+    Piano
   },
   data: () => ({
     connection: {
       ws: null,
       username: ""
     },
-    serverUrl: "piano-with-friends.us-east-2.elasticbeanstalk.com",
+    serverUrl: "localhost:8000",
     isConnected: false,
     connectionError: false,
     loader: null,
@@ -205,8 +207,9 @@ export default {
         return;
       }
 
-      this.connection.ws.onclose = () => {
+      this.connection.ws.onclose = err => {
         console.log("Your connection is closed");
+        console.log(err);
       };
 
       this.connection.ws.onmessage = messageEvent => {
