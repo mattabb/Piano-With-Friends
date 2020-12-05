@@ -85,19 +85,7 @@
         </v-alert>
       </div>
       <div v-else>
-        <Piano :octave-start="1" :octave-end="7" />
-        <v-btn
-          depressed
-          ref="sendButton"
-          color="primary"
-          :loading="loading"
-          :disabled="loading"
-          @click="
-            sendWebsocketMessage({eventName: 'keyboardPress', message: 'testMessage'})
-          "
-          >
-          Send
-        </v-btn>
+        <Piano :octave-start="1" :octave-end="6" />
       </div>
     </v-main>
   </v-app>
