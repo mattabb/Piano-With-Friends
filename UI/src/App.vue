@@ -212,7 +212,9 @@ export default {
       this.connection.ws.addEventListener("error", event => {
         console.log("Error connection:", event);
         this.setConnectionError();
-        this.setIsConnected();
+        if (this.isConnected) {
+          this.setIsConnected()
+        }
       });
     },
 
@@ -230,10 +232,11 @@ export default {
     },
 
     setWebsocketMessageListener() {
-      this.connection.ws.onmessage = messageEvent => {
+      this.connection.ws.onmessage = (messageEvent) => {
         const socketPayload = JSON.parse(messageEvent.data);
+        console.log("received message from backend...", socketPayload)
 
-        switch (socketPayload.eventName) {
+        switch (socketPayload.EventName) {
           // Join case
           case "join": {
             this.checkIfValidPayload(socketPayload);
@@ -247,7 +250,7 @@ export default {
             console.log(socketPayload.eventPayload, "has left the chat");
             break;
           }
-          case "keyBdPressResponse": {
+          case "keyboardPress": {
             this.checkIfValidPayload(socketPayload);
 
             const messageContent = socketPayload.EventPayload;
@@ -264,7 +267,7 @@ export default {
             break;
           }
         }
-      };
+      }
     },
 
     onWebsocketOpen(event) {
@@ -285,12 +288,13 @@ export default {
 
     // this is how we send messages to the backend
     sendWebsocketMessage(socketPayload) {
+      console.log("message being sent", socketPayload)
       this.connection.ws.send(
         JSON.stringify({
           EventName: socketPayload.eventName,
           EventPayload: {
             username: this.connection.username,
-            message: socketPayload.EventPayload
+            message: socketPayload.message
           }
         })
       );
@@ -307,6 +311,7 @@ export default {
     listenToWebsocketMessage() {
       // If we have no connection, we can't listen
       if (this.connection.ws === null) {
+        console.log("hit error in listen to websocket message")
         return;
       }
 

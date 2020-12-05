@@ -125,6 +125,7 @@ export default {
       );
     }
   },
+
   // See https://vuejs.org/v2/guide/computed.html for an explanation on computed
   // In the simplest sense, they are ways to cut down on ugly in-line javascript expressions
   computed: {
@@ -236,6 +237,7 @@ export default {
     },
 
     toggleActive(note) {
+      console.log(pianoState)
       pianoState[note] === true
         ? (pianoState[note] = false)
         : (pianoState[note] = true);
@@ -253,7 +255,6 @@ export default {
   margin: 10%;
   width: 75vw;
   height: calc(260px - calc(var(--octaves) * 10px));
-  overflow-x: hidden;
 }
 
 .keyboard ul {
@@ -293,6 +294,7 @@ li.black span {
   color: white;
   z-index: 3;
 }
+
 
 .blank {
   border-width: 0;
