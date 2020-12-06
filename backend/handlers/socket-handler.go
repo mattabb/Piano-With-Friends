@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"time"
 
@@ -230,7 +231,7 @@ func (c *Client) writePump() {
 		case payload, ok := <-c.send:
 
 			log.Print("Hit writepump for ", c.username, " payload is: ", payload)
-
+			fmt.Println("Hit writepump for ", c.username, " payload is: ", payload)
 			// TODO: Separate this into a writeJSON() function
 			// Encode our payload
 			jsonPayload, err := json.Marshal(payload)
@@ -240,7 +241,7 @@ func (c *Client) writePump() {
 			}
 
 			// Write now
-			c.webSocketConnection.SetWriteDeadline(time.Now())
+			c.webSocketConnection.SetWriteDeadline(time.Now().Add(writeWait))
 
 			if !ok {
 				log.Print("not ok")
