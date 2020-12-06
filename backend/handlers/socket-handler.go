@@ -40,10 +40,10 @@ func CreateNewSocketUser(pool *Pool, connection *websocket.Conn, username string
 		username:            username,
 	}
 
-	client.pool.register <- client
-
-	go client.readPump()
 	go client.writePump()
+	go client.readPump()
+
+	client.pool.register <- client
 }
 
 /*
@@ -140,11 +140,8 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 
 	// When someone presses the keyboard
 	case "keyboardPress":
-		socketEventResponse.EventName = "keyBdPressResponse"
-		socketEventResponse.EventPayload = map[string]interface{}{
-			"username": client.username,
-			"message":  socketEventPayload.EventPayload,
-		}
+		socketEventResponse.EventName = "keyboardPress"
+		socketEventResponse.EventPayload = socketEventPayload.EventPayload
 		BroadcastSocketEventToAllClient(client.pool, socketEventResponse)
 	}
 
@@ -222,7 +219,7 @@ func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		// c.webSocketConnection.Close()
+		c.webSocketConnection.Close()
 	}()
 
 	for {
@@ -240,7 +237,7 @@ func (c *Client) writePump() {
 			}
 
 			// Write now
-			c.webSocketConnection.SetWriteDeadline(time.Now())
+			c.webSocketConnection.SetWriteDeadline(time.Now().Add(writeWait))
 
 			if !ok {
 				log.Print("not ok")
@@ -258,8 +255,6 @@ func (c *Client) writePump() {
 				log.Print("error when trying to write", errr)
 				return
 			}
-
-			log.Print("successfully wrote without hitting error")
 
 			// // used to see all of the previous messages
 			//n := len(c.send)
