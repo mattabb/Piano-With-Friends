@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"time"
 
@@ -141,11 +140,8 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 
 	// When someone presses the keyboard
 	case "keyboardPress":
-		socketEventResponse.EventName = "keyBdPressResponse"
-		socketEventResponse.EventPayload = map[string]interface{}{
-			"username": client.username,
-			"message":  socketEventPayload.EventPayload,
-		}
+		socketEventResponse.EventName = "keyboardPress"
+		socketEventResponse.EventPayload = socketEventPayload.EventPayload
 		BroadcastSocketEventToAllClient(client.pool, socketEventResponse)
 	}
 
@@ -166,7 +162,7 @@ func (c *Client) readJSON() (SocketEventStruct, error) {
 	decoder := json.NewDecoder(bytes.NewReader(payload))
 	decoderErr := decoder.Decode(&socketEventPayload)
 
-	log.Print("read JSON from ", c.username, " ... event payload from websocket is: ", socketEventPayload)
+	log.Print("read JSON from ", c.username, " ... event payload from websocket is: ", socketEventPayload.EventPayload)
 
 	if decoderErr != nil {
 		log.Printf("error: %v", decoderErr)
@@ -231,7 +227,6 @@ func (c *Client) writePump() {
 		case payload, ok := <-c.send:
 
 			log.Print("Hit writepump for ", c.username, " payload is: ", payload)
-			fmt.Println("Hit writepump for ", c.username, " payload is: ", payload)
 			// TODO: Separate this into a writeJSON() function
 			// Encode our payload
 			jsonPayload, err := json.Marshal(payload)
@@ -259,8 +254,6 @@ func (c *Client) writePump() {
 				log.Print("error when trying to write", errr)
 				return
 			}
-
-			log.Print("successfully wrote without hitting error")
 
 			// // used to see all of the previous messages
 			//n := len(c.send)
