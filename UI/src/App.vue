@@ -85,19 +85,11 @@
         </v-alert>
       </div>
       <div v-else>
-        <Piano :octave-start="1" :octave-end="7" />
-        <v-btn
-          depressed
-          ref="sendButton"
-          color="primary"
-          :loading="loading"
-          :disabled="loading"
-          @click="
-            sendWebsocketMessage({eventName: 'keyboardPress', message: 'testMessage'})
-          "
-          >
-          Send
-        </v-btn>
+        <Piano
+          :octave-start="2"
+          :octave-end="5"
+          :connection="this.connection"
+        />
       </div>
     </v-main>
   </v-app>
@@ -183,7 +175,7 @@ export default {
     verifyValidUser(username) {
       var lastFive = username.substr(username.length - 5);
       var lastFiveInt = Number(lastFive);
-      console.log(lastFiveInt)
+      console.log(lastFiveInt);
       if (!Number.isInteger(lastFiveInt)) {
         return false;
       } else {
@@ -213,7 +205,7 @@ export default {
         console.log("Error connection:", event);
         this.setConnectionError();
         if (this.isConnected) {
-          this.setIsConnected()
+          this.setIsConnected();
         }
       });
     },
@@ -232,9 +224,9 @@ export default {
     },
 
     setWebsocketMessageListener() {
-      this.connection.ws.onmessage = (messageEvent) => {
+      this.connection.ws.onmessage = messageEvent => {
         const socketPayload = JSON.parse(messageEvent.data);
-        console.log("received message from backend...", socketPayload)
+        console.log("received message from backend...", socketPayload);
 
         switch (socketPayload.EventName) {
           // Join case
@@ -267,7 +259,7 @@ export default {
             break;
           }
         }
-      }
+      };
     },
 
     onWebsocketOpen(event) {
@@ -279,22 +271,26 @@ export default {
 
       this.listenToWebsocketMessage();
 
+      var d = new Date();
+      var time = d.getTime();
       var mockMessage = {
         eventName: "keyboardPress",
-        message: "abcdefgh"
+        message: "abcdefgh",
+        time: time
       };
       this.sendWebsocketMessage(mockMessage);
     },
 
     // this is how we send messages to the backend
     sendWebsocketMessage(socketPayload) {
-      console.log("message being sent", socketPayload)
+      console.log("message being sent", socketPayload);
       this.connection.ws.send(
         JSON.stringify({
           EventName: socketPayload.eventName,
           EventPayload: {
             username: this.connection.username,
-            message: socketPayload.message
+            message: socketPayload.message,
+            time: socketPayload.time
           }
         })
       );
@@ -311,7 +307,7 @@ export default {
     listenToWebsocketMessage() {
       // If we have no connection, we can't listen
       if (this.connection.ws === null) {
-        console.log("hit error in listen to websocket message")
+        console.log("hit error in listen to websocket message");
         return;
       }
 

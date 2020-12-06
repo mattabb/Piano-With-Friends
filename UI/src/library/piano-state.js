@@ -16,7 +16,7 @@ const noteMap = notes.reduce((map, note) => {
 		etc.
 */
 const pianoState = new Vue.observable(noteMap);
-
+// this is unusable from my test... the state is not updating quick enough on keydown and keyup I believe
 export default pianoState;
 
 // This resets the piano and sets every note to false (not being clicked)

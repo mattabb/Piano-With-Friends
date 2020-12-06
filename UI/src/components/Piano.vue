@@ -1,14 +1,17 @@
 <template>
   <div class="keyboard" :style="style">
+    <Keypress key-event="keyup" @any="keyUpMonitor" />
+    <Keypress key-event="keydown" @any="keyDownMonitor" />
     <ul>
       <li
         v-for="(key, index) in keys"
         :key="index"
         :style="key.style"
-        @click="toggleActive(key.name)"
+        @mousedown="toggleTrue(key.name)"
+        @mouseup="toggleFalse(key.name)"
         :class="[...key.class, { active: noteActive(key.name) }]"
       >
-        <span>{{ key.name }} </span>
+        <span>{{ key.name }}</span>
       </li>
     </ul>
   </div>
@@ -16,12 +19,12 @@
 
 <script>
 import pianoState from "../library/piano-state";
+import { addKeyCodeToKeys } from "../library/piano-mappings";
 
 const WHITE_KEYS = ["C", "D", "E", "F", "G", "A", "B"];
 const BLACK_KEYS = ["C#", "D#", null, "F#", "G#", "A#", null];
-// const NOTE_OFFSETS = ["C", "D", "E", "F", "G", "A", "B"];
 const MIN_OCTAVE = 0;
-const MAX_OCTAVE = 8;
+const MAX_OCTAVE = 7;
 const MIN_NOTE = 0;
 const MAX_NOTE = 6;
 const WHITE_KEYS_PER_OCT = 7;
@@ -29,22 +32,23 @@ const BLACK_KEYS_PER_OCT = 5;
 
 export default {
   name: "Piano",
+
+  components: {
+    Keypress: () => import("vue-keypress")
+  },
+
   // Props are basically parameters for vue components
   props: {
-    // Octave start prop => Where the piano's octave will start
     octaveStart: {
       type: Number,
-      // Validate that octave start passed in is between our max and min
       validator(value) {
         return value >= MIN_OCTAVE && value <= MAX_OCTAVE;
       },
-      // if not we start at min octave
       default() {
         return MIN_OCTAVE;
       }
     },
 
-    // Octave end prop => Where the piano's octave will end
     octaveEnd: {
       type: Number,
       validator(value) {
@@ -55,7 +59,6 @@ export default {
       }
     },
 
-    // noteStart prop => Where the piano's notes will start
     noteStart: {
       type: [Number, String],
       validator(value) {
@@ -70,7 +73,6 @@ export default {
       }
     },
 
-    // noteEnd prop => Where the piano's notes will end
     noteEnd: {
       type: [Number, String],
       validator(value) {
@@ -83,6 +85,10 @@ export default {
       default() {
         return WHITE_KEYS.indexOf("C");
       }
+    },
+    // websocket connection
+    connection: {
+      type: Object
     }
   },
   // Our data variables... think of them as this component's global variables (ONLY FOR THIS COMPONENT)
@@ -92,7 +98,13 @@ export default {
       octaveEnd: 3,
       noteStart: 0,
       noteEnd: 0
+    },
+    keysData: [],
+    conn: {
+      ws: null,
+      username: ""
     }
+    // ,pianoState: []
   }),
 
   // "Created" Vue Lifecycle Hook
@@ -113,7 +125,7 @@ export default {
     }
 
     this.offsets.octaveStart = this.octaveStart;
-    this.offsets.octaveEnd = this.octaveEnd;
+    this.offsets.octaveEnd = this.octaveEnd + 1;
 
     if (
       this.offsets.octaveStart > this.offsets.octaveEnd ||
@@ -124,16 +136,17 @@ export default {
         "The start octave must be lower than or equal to the end octave and the start note must be lower than the end note."
       );
     }
+
+    this.conn = this.connection;
+    console.log(this.conn);
+
+    this.setWhiteKeys(this.keysData);
+    this.setBlackKeys(this.keysData);
+    addKeyCodeToKeys(this.keysData);
+
+    // this.pianoState = pianoState
   },
-
-  // See https://vuejs.org/v2/guide/computed.html for an explanation on computed
-  // In the simplest sense, they are ways to cut down on ugly in-line javascript expressions
   computed: {
-    // This returns the state of the piano, look at piano-state.js for a better explanation
-    pianoState() {
-      return pianoState;
-    },
-
     offsetStart() {
       return this.clamp(this.offsets.noteStart, MIN_NOTE, MAX_NOTE);
     },
@@ -147,7 +160,8 @@ export default {
         Infinity,
         this.numOctaves * WHITE_KEYS_PER_OCT -
           this.offsetStart -
-          (WHITE_KEYS_PER_OCT - this.offsetEnd + 1)
+          (WHITE_KEYS_PER_OCT - this.offsetEnd + 1) +
+          2
       );
     },
 
@@ -182,7 +196,55 @@ export default {
     keys() {
       const keys = [];
 
-      // White keys
+      this.setWhiteKeys(keys);
+      this.setBlackKeys(keys);
+
+      addKeyCodeToKeys(keys);
+
+      return keys;
+    }
+  },
+  methods: {
+    // Clamps a number to a range
+    clamp(num, min, max) {
+      return Math.max(min, Math.min(max, num));
+    },
+
+    calculateOctave(n) {
+      return (
+        Math.floor(n / WHITE_KEYS_PER_OCT) +
+        Math.max(MIN_OCTAVE, this.offsets.octaveStart)
+      );
+    },
+
+    // Probably should abstract this since it's used in piano.vue and app.vue
+    sendWebsocketMessage(socketPayload) {
+      console.log("message being sent", socketPayload);
+      this.connection.ws.send(
+        JSON.stringify({
+          EventName: socketPayload.eventName,
+          EventPayload: {
+            username: this.connection.username,
+            message: socketPayload.message,
+            time: socketPayload.time
+          }
+        })
+      );
+    },
+
+    // toggleTrue(note) {
+    //   if (this.pianoState[note] == false) {
+    //     this.pianoState[note] = true
+    //   }
+    // },
+
+    // toggleFalse(note) {
+    //   if (this.pianoState[note]) {
+    //     this.pianoState[note] = false
+    //   }
+    // },
+
+    setWhiteKeys(keys) {
       for (let i = this.offsetStart, j = 0; j < this.totalWhiteKeys; i++, j++) {
         const octave = this.calculateOctave(i);
         const keyName = WHITE_KEYS[i % 7];
@@ -197,8 +259,9 @@ export default {
 
         keys.push(key);
       }
+    },
 
-      // Black keys
+    setBlackKeys(keys) {
       for (let i = this.offsetStart, j = 0; j < this.totalWhiteKeys; i++, j++) {
         const octave = this.calculateOctave(i);
         const keyName = BLACK_KEYS[i % 7];
@@ -219,28 +282,48 @@ export default {
 
         keys.push(key);
       }
-
-      return keys;
-    }
-  },
-  methods: {
-    // Clamps a number to a range
-    clamp(num, min, max) {
-      return Math.max(min, Math.min(max, num));
     },
 
-    calculateOctave(n) {
-      return (
-        Math.floor(n / WHITE_KEYS_PER_OCT) +
-        Math.max(MIN_OCTAVE, this.offsets.octaveStart)
-      );
+    keyDownMonitor(response) {
+      var keyPressed = response.event.keyCode;
+      var keys = this.keysData;
+      for (var key of keys) {
+        if (key.keyCode == keyPressed) {
+          let classString = String(
+            key.class[0] + " " + key.class[1] + " " + key.class[2]
+          );
+          console.log(key);
+          document
+            .getElementsByClassName(classString)[0]
+            .classList.add("active");
+
+          var d = new Date();
+          var time = d.getTime();
+          var socketPayload = {
+            EventName: "keyboardPress",
+            EventPayload: {
+              username: this.conn.username,
+              message: key.keyCode,
+              time: time
+            }
+          };
+          this.sendWebsocketMessage(socketPayload);
+        }
+      }
     },
 
-    toggleActive(note) {
-      console.log(pianoState)
-      pianoState[note] === true
-        ? (pianoState[note] = false)
-        : (pianoState[note] = true);
+    keyUpMonitor(response) {
+      var keyLifted = response.event.keyCode;
+      var keys = this.keysData;
+      for (var key of keys) {
+        if (key.keyCode == keyLifted) {
+          let classString =
+            key.class[0] + " " + key.class[1] + " " + key.class[2];
+          document
+            .getElementsByClassName(classString)[0]
+            .classList.remove("active");
+        }
+      }
     },
 
     noteActive(note) {
@@ -295,7 +378,6 @@ li.black span {
   z-index: 3;
 }
 
-
 .blank {
   border-width: 0;
   grid-row: 1 / span 2;
@@ -303,6 +385,15 @@ li.black span {
 
 li {
   transition: background-color 0.2s;
+}
+
+/* One key off so just gonna hide it :) */
+.Cs6 {
+  visibility: hidden !important;
+}
+
+.active {
+  background-color: black !important;
 }
 
 .Fs.active {

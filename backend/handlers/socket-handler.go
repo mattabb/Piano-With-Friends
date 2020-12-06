@@ -162,7 +162,7 @@ func (c *Client) readJSON() (SocketEventStruct, error) {
 	decoder := json.NewDecoder(bytes.NewReader(payload))
 	decoderErr := decoder.Decode(&socketEventPayload)
 
-	log.Print("read JSON from ", c.username, " ... event payload from websocket is: ", socketEventPayload)
+	log.Print("read JSON from ", c.username, " ... event payload from websocket is: ", socketEventPayload.EventPayload)
 
 	if decoderErr != nil {
 		log.Printf("error: %v", decoderErr)
@@ -227,7 +227,6 @@ func (c *Client) writePump() {
 		case payload, ok := <-c.send:
 
 			log.Print("Hit writepump for ", c.username, " payload is: ", payload)
-
 			// TODO: Separate this into a writeJSON() function
 			// Encode our payload
 			jsonPayload, err := json.Marshal(payload)
