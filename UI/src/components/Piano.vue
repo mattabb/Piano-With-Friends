@@ -1,17 +1,17 @@
 <template>
   <div class="keyboard" :style="style">
+    <Keypress key-event="keyup" @any="keyUpMonitor" />
+    <Keypress key-event="keydown" @any="keyDownMonitor" />
     <ul>
       <li
         v-for="(key, index) in keys"
         :key="index"
         :style="key.style"
-        @mousedown="toggleActive(key.name)"
-        @mouseup="toggleActive(key.name)"
+        @mousedown="toggleTrue(key.name)"
+        @mouseup="toggleFalse(key.name)"
         :class="[...key.class, { active: noteActive(key.name) }]"
       >
-        <span v-on:keyup="keyUpMonitor" v-on:keydown="keyDownMonitor"
-          >{{ key.name }}
-        </span>
+        <span>{{ key.name }}</span>
       </li>
     </ul>
   </div>
@@ -19,10 +19,10 @@
 
 <script>
 import pianoState from "../library/piano-state";
+import { addKeyCodeToKeys } from "../library/piano-mappings";
 
 const WHITE_KEYS = ["C", "D", "E", "F", "G", "A", "B"];
 const BLACK_KEYS = ["C#", "D#", null, "F#", "G#", "A#", null];
-// const NOTE_OFFSETS = ["C", "D", "E", "F", "G", "A", "B"];
 const MIN_OCTAVE = 0;
 const MAX_OCTAVE = 7;
 const MIN_NOTE = 0;
@@ -32,22 +32,23 @@ const BLACK_KEYS_PER_OCT = 5;
 
 export default {
   name: "Piano",
+
+  components: {
+    Keypress: () => import("vue-keypress")
+  },
+
   // Props are basically parameters for vue components
   props: {
-    // Octave start prop => Where the piano's octave will start
     octaveStart: {
       type: Number,
-      // Validate that octave start passed in is between our max and min
       validator(value) {
         return value >= MIN_OCTAVE && value <= MAX_OCTAVE;
       },
-      // if not we start at min octave
       default() {
         return MIN_OCTAVE;
       }
     },
 
-    // Octave end prop => Where the piano's octave will end
     octaveEnd: {
       type: Number,
       validator(value) {
@@ -58,7 +59,6 @@ export default {
       }
     },
 
-    // noteStart prop => Where the piano's notes will start
     noteStart: {
       type: [Number, String],
       validator(value) {
@@ -73,7 +73,6 @@ export default {
       }
     },
 
-    // noteEnd prop => Where the piano's notes will end
     noteEnd: {
       type: [Number, String],
       validator(value) {
@@ -86,6 +85,10 @@ export default {
       default() {
         return WHITE_KEYS.indexOf("C");
       }
+    },
+    // websocket connection
+    connection: {
+      type: Object
     }
   },
   // Our data variables... think of them as this component's global variables (ONLY FOR THIS COMPONENT)
@@ -95,7 +98,13 @@ export default {
       octaveEnd: 3,
       noteStart: 0,
       noteEnd: 0
+    },
+    keysData: [],
+    conn: {
+      ws: null,
+      username: ""
     }
+    // ,pianoState: []
   }),
 
   // "Created" Vue Lifecycle Hook
@@ -116,7 +125,7 @@ export default {
     }
 
     this.offsets.octaveStart = this.octaveStart;
-    this.offsets.octaveEnd = this.octaveEnd;
+    this.offsets.octaveEnd = this.octaveEnd + 1;
 
     if (
       this.offsets.octaveStart > this.offsets.octaveEnd ||
@@ -127,16 +136,17 @@ export default {
         "The start octave must be lower than or equal to the end octave and the start note must be lower than the end note."
       );
     }
+
+    this.conn = this.connection;
+    console.log(this.conn);
+
+    this.setWhiteKeys(this.keysData);
+    this.setBlackKeys(this.keysData);
+    addKeyCodeToKeys(this.keysData);
+
+    // this.pianoState = pianoState
   },
-
-  // See https://vuejs.org/v2/guide/computed.html for an explanation on computed
-  // In the simplest sense, they are ways to cut down on ugly in-line javascript expressions
   computed: {
-    // This returns the state of the piano, look at piano-state.js for a better explanation
-    pianoState() {
-      return pianoState;
-    },
-
     offsetStart() {
       return this.clamp(this.offsets.noteStart, MIN_NOTE, MAX_NOTE);
     },
@@ -150,7 +160,8 @@ export default {
         Infinity,
         this.numOctaves * WHITE_KEYS_PER_OCT -
           this.offsetStart -
-          (WHITE_KEYS_PER_OCT - this.offsetEnd + 1)
+          (WHITE_KEYS_PER_OCT - this.offsetEnd + 1) +
+          2
       );
     },
 
@@ -185,7 +196,55 @@ export default {
     keys() {
       const keys = [];
 
-      // White keys
+      this.setWhiteKeys(keys);
+      this.setBlackKeys(keys);
+
+      addKeyCodeToKeys(keys);
+
+      return keys;
+    }
+  },
+  methods: {
+    // Clamps a number to a range
+    clamp(num, min, max) {
+      return Math.max(min, Math.min(max, num));
+    },
+
+    calculateOctave(n) {
+      return (
+        Math.floor(n / WHITE_KEYS_PER_OCT) +
+        Math.max(MIN_OCTAVE, this.offsets.octaveStart)
+      );
+    },
+
+    // Probably should abstract this since it's used in piano.vue and app.vue
+    sendWebsocketMessage(socketPayload) {
+      console.log("message being sent", socketPayload);
+      this.connection.ws.send(
+        JSON.stringify({
+          EventName: socketPayload.eventName,
+          EventPayload: {
+            username: this.connection.username,
+            message: socketPayload.message,
+            time: socketPayload.time
+          }
+        })
+      );
+    },
+
+    // toggleTrue(note) {
+    //   if (this.pianoState[note] == false) {
+    //     this.pianoState[note] = true
+    //   }
+    // },
+
+    // toggleFalse(note) {
+    //   if (this.pianoState[note]) {
+    //     this.pianoState[note] = false
+    //   }
+    // },
+
+    setWhiteKeys(keys) {
       for (let i = this.offsetStart, j = 0; j < this.totalWhiteKeys; i++, j++) {
         const octave = this.calculateOctave(i);
         const keyName = WHITE_KEYS[i % 7];
@@ -200,8 +259,9 @@ export default {
 
         keys.push(key);
       }
+    },
 
-      // Black keys
+    setBlackKeys(keys) {
       for (let i = this.offsetStart, j = 0; j < this.totalWhiteKeys; i++, j++) {
         const octave = this.calculateOctave(i);
         const keyName = BLACK_KEYS[i % 7];
@@ -222,557 +282,47 @@ export default {
 
         keys.push(key);
       }
-
-      return keys;
-    }
-  },
-  methods: {
-    // Clamps a number to a range
-    clamp(num, min, max) {
-      return Math.max(min, Math.min(max, num));
     },
 
-    calculateOctave(n) {
-      return (
-        Math.floor(n / WHITE_KEYS_PER_OCT) +
-        Math.max(MIN_OCTAVE, this.offsets.octaveStart)
-      );
-    },
+    keyDownMonitor(response) {
+      var keyPressed = response.event.keyCode;
+      var keys = this.keysData;
+      for (var key of keys) {
+        if (key.keyCode == keyPressed) {
+          let classString = String(
+            key.class[0] + " " + key.class[1] + " " + key.class[2]
+          );
+          console.log(key);
+          document
+            .getElementsByClassName(classString)[0]
+            .classList.add("active");
 
-    toggleActive(note) {
-      console.log(pianoState);
-      pianoState[note] === true
-        ? (pianoState[note] = false)
-        : (pianoState[note] = true);
-    },
-
-    keyDownMonitor: function(event) {
-      var keyPressed = event.keyCode;
-      console.log(pianoState);
-      switch (keyPressed) {
-        case 192:
-          document.getElementByClassName("white C C2").classList.add("active");
-          document.toggleActive("C2");
-          break;
-        case 49:
-          document
-            .getElementByClassName("black Cs Cs2")
-            .classList.add("active");
-          document.toggleActive("Cs2");
-          break;
-        case 50:
-          document.getElementByClassName("white D D2").classList.add("active");
-          document.toggleActive("D2");
-          break;
-        case 51:
-          document.getElementByClassName("black D Ds2").classList.add("active");
-          document.toggleActive("Ds2");
-          break;
-        case 52:
-          document.getElementByClassName("white E E2").classList.add("active");
-          document.toggleActive("E2");
-          break;
-        case 53:
-          document.getElementByClassName("white F F2").classList.add("active");
-          document.toggleActive("F2");
-          break;
-        case 54:
-          document.getElementByClassName("black F Fs2").classList.add("active");
-          document.toggleActive("Fs2");
-          break;
-        case 55:
-          document.getElementByClassName("white G G2").classList.add("active");
-          document.toggleActive("G2");
-          break;
-        case 56:
-          document
-            .getElementByClassName("black Gs Gs2")
-            .classList.add("active");
-          document.toggleActive("Gs2");
-          break;
-        case 57:
-          document.getElementByClassName("white A A2").classList.add("active");
-          document.toggleActive("A2");
-          break;
-        case 48:
-          document
-            .getElementByClassName("black As As2")
-            .classList.add("active");
-          document.toggleActive("As2");
-          break;
-        case 189:
-          document.getElementByClassName("white B B2").classList.add("active");
-          document.toggleActive("B2");
-          break;
-        case 187:
-          document.getElementByClassName("white C C3").classList.add("active");
-          document.toggleActive("C3");
-          break;
-        case 81:
-          document
-            .getElementByClassName("black Cs Cs3")
-            .classList.add("active");
-          document.toggleActive("Cs3");
-          break;
-        case 87:
-          document.getElementByClassName("white D D3").classList.add("active");
-          document.toggleActive("D3");
-          break;
-        case 69:
-          document
-            .getElementByClassName("black Ds Ds3")
-            .classList.add("active");
-          document.toggleActive("Ds3");
-          break;
-        case 82:
-          document.getElementByClassName("white E E3").classList.add("active");
-          document.toggleActive("E3");
-          break;
-        case 84:
-          document.getElementByClassName("white F F3").classList.add("active");
-          document.toggleActive("F3");
-          break;
-        case 89:
-          document
-            .getElementByClassName("black Fs Fs3")
-            .classList.add("active");
-          document.toggleActive("Fs3");
-          break;
-        case 85:
-          document.getElementByClassName("white G G3").classList.add("active");
-          document.toggleActive("G3");
-          break;
-        case 73:
-          document
-            .getElementByClassName("black Gs Gs3")
-            .classList.add("active");
-          document.toggleActive("Gs3");
-          break;
-        case 79:
-          document.getElementByClassName("white A A3").classList.add("active");
-          document.toggleActive("A3");
-          break;
-        case 80:
-          document
-            .getElementByClassName("black As As3")
-            .classList.add("active");
-          document.toggleActive("As3");
-          break;
-        case 219:
-          document.getElementByClassName("white B B3").classList.add("active");
-          document.toggleActive("B3");
-          break;
-        case 221:
-          document.getElementByClassName("white C C4").classList.add("active");
-          document.toggleActive("C4");
-          break;
-        case 65:
-          document
-            .getElementByClassName("black Cs Cs4")
-            .classList.add("active");
-          document.toggleActive("Cs4");
-          break;
-        case 83:
-          document.getElementByClassName("white D D4").classList.add("active");
-          document.toggleActive("D4");
-          break;
-        case 68:
-          document
-            .getElementByClassName("black Ds Ds4")
-            .classList.add("active");
-          document.toggleActive("Ds4");
-          break;
-        case 70:
-          document.getElementByClassName("white E E4").classList.add("active");
-          document.toggleActive("E4");
-          break;
-        case 71:
-          document.getElementByClassName("white F F4").classList.add("active");
-          document.toggleActive("F4");
-          break;
-        case 72:
-          document
-            .getElementByClassName("black Fs Fs4")
-            .classList.add("active");
-          document.toggleActive("Fs4");
-          break;
-        case 74:
-          document.getElementByClassName("white G G4").classList.add("active");
-          document.toggleActive("G4");
-          break;
-        case 75:
-          document
-            .getElementByClassName("black Gs Gs4")
-            .classList.add("active");
-          document.toggleActive("Gs4");
-          break;
-        case 76:
-          document.getElementByClassName("white A A4").classList.add("active");
-          document.toggleActive("A4");
-          break;
-        case 186:
-          document
-            .getElementByClassName("black As As4")
-            .classList.add("active");
-          document.toggleActive("As4");
-          break;
-        case 222:
-          document.getElementByClassName("white B B4").classList.add("active");
-          document.toggleActive("B4");
-          break;
-        case 90:
-          document.getElementByClassName("white C C5").classList.add("active");
-          document.toggleActive("C5");
-          break;
-        case 88:
-          document
-            .getElementByClassName("black Cs Cs5")
-            .classList.add("active");
-          document.toggleActive("Cs5");
-          break;
-        case 67:
-          document.getElementByClassName("white D D5").classList.add("active");
-          document.toggleActive("D5");
-          break;
-        case 86:
-          document
-            .getElementByClassName("black Ds Ds5")
-            .classList.add("active");
-          document.toggleActive("Ds5");
-          break;
-        case 66:
-          document.getElementByClassName("white E E5").classList.add("active");
-          document.toggleActive("E5");
-          break;
-        case 78:
-          document.getElementByClassName("white F F5").classList.add("active");
-          document.toggleActive("F5");
-          break;
-        case 77:
-          document
-            .getElementByClassName("black Fs Fs5")
-            .classList.add("active");
-          document.toggleActive("Fs5");
-          break;
-        case 188:
-          document.getElementByClassName("white G G5").classList.add("active");
-          document.toggleActive("G5");
-          break;
-        case 190:
-          document
-            .getElementByClassName("black Gs Gs5")
-            .classList.add("active");
-          document.toggleActive("Gs5");
-          break;
-        case 191:
-          document.getElementByClassName("white A A5").classList.add("active");
-          document.toggleActive("A5");
-          break;
-        case 37:
-          document
-            .getElementByClassName("black As As5")
-            .classList.add("active");
-          document.toggleActive("As5");
-          break;
-        case 39:
-          document.getElementByClassName("white B B5").classList.add("active");
-          document.toggleActive("B5");
-          break;
+          var d = new Date();
+          var time = d.getTime();
+          var socketPayload = {
+            EventName: "keyboardPress",
+            EventPayload: {
+              username: this.conn.username,
+              message: key.keyCode,
+              time: time
+            }
+          };
+          this.sendWebsocketMessage(socketPayload);
+        }
       }
     },
 
-    keyUpMonitor: function(event) {
-      var keyPressed = event.keyCode;
-      console.log(pianoState);
-      switch (keyPressed) {
-        case 192:
+    keyUpMonitor(response) {
+      var keyLifted = response.event.keyCode;
+      var keys = this.keysData;
+      for (var key of keys) {
+        if (key.keyCode == keyLifted) {
+          let classString =
+            key.class[0] + " " + key.class[1] + " " + key.class[2];
           document
-            .getElementByClassName("white C C2")
+            .getElementsByClassName(classString)[0]
             .classList.remove("active");
-          document.toggleActive("C2");
-          break;
-        case 49:
-          document
-            .getElementByClassName("black Cs Cs2")
-            .classList.remove("active");
-          document.toggleActive("Cs2");
-          break;
-        case 50:
-          document
-            .getElementByClassName("white D D2")
-            .classList.remove("active");
-          document.toggleActive("D2");
-          break;
-        case 51:
-          document
-            .getElementByClassName("black D Ds2")
-            .classList.remove("active");
-          document.toggleActive("Ds2");
-          break;
-        case 52:
-          document
-            .getElementByClassName("white E E2")
-            .classList.remove("active");
-          document.toggleActive("E2");
-          break;
-        case 53:
-          document
-            .getElementByClassName("white F F2")
-            .classList.remove("active");
-          document.toggleActive("F2");
-          break;
-        case 54:
-          document
-            .getElementByClassName("black F Fs2")
-            .classList.remove("active");
-          document.toggleActive("Fs2");
-          break;
-        case 55:
-          document
-            .getElementByClassName("white G G2")
-            .classList.remove("active");
-          document.toggleActive("G2");
-          break;
-        case 56:
-          document
-            .getElementByClassName("black Gs Gs2")
-            .classList.remove("active");
-          document.toggleActive("Gs2");
-          break;
-        case 57:
-          document
-            .getElementByClassName("white A A2")
-            .classList.remove("active");
-          document.toggleActive("A2");
-          break;
-        case 48:
-          document
-            .getElementByClassName("black As As2")
-            .classList.remove("active");
-          document.toggleActive("As2");
-          break;
-        case 189:
-          document
-            .getElementByClassName("white B B2")
-            .classList.remove("active");
-          document.toggleActive("B2");
-          break;
-        case 187:
-          document
-            .getElementByClassName("white C C3")
-            .classList.remove("active");
-          document.toggleActive("C3");
-          break;
-        case 81:
-          document
-            .getElementByClassName("black Cs Cs3")
-            .classList.remove("active");
-          document.toggleActive("Cs3");
-          break;
-        case 87:
-          document
-            .getElementByClassName("white D D3")
-            .classList.remove("active");
-          document.toggleActive("D3");
-          break;
-        case 69:
-          document
-            .getElementByClassName("black Ds Ds3")
-            .classList.remove("active");
-          document.toggleActive("Ds3");
-          break;
-        case 82:
-          document
-            .getElementByClassName("white E E3")
-            .classList.remove("active");
-          document.toggleActive("E3");
-          break;
-        case 84:
-          document
-            .getElementByClassName("white F F3")
-            .classList.remove("active");
-          document.toggleActive("F3");
-          break;
-        case 89:
-          document
-            .getElementByClassName("black Fs Fs3")
-            .classList.remove("active");
-          document.toggleActive("Fs3");
-          break;
-        case 85:
-          document
-            .getElementByClassName("white G G3")
-            .classList.remove("active");
-          document.toggleActive("G3");
-          break;
-        case 73:
-          document
-            .getElementByClassName("black Gs Gs3")
-            .classList.remove("active");
-          document.toggleActive("Gs3");
-          break;
-        case 79:
-          document
-            .getElementByClassName("white A A3")
-            .classList.remove("active");
-          document.toggleActive("A3");
-          break;
-        case 80:
-          document
-            .getElementByClassName("black As As3")
-            .classList.remove("active");
-          document.toggleActive("As3");
-          break;
-        case 219:
-          document
-            .getElementByClassName("white B B3")
-            .classList.remove("active");
-          document.toggleActive("B3");
-          break;
-        case 221:
-          document
-            .getElementByClassName("white C C4")
-            .classList.remove("active");
-          document.toggleActive("C4");
-          break;
-        case 65:
-          document
-            .getElementByClassName("black Cs Cs4")
-            .classList.remove("active");
-          document.toggleActive("Cs4");
-          break;
-        case 83:
-          document
-            .getElementByClassName("white D D4")
-            .classList.remove("active");
-          document.toggleActive("D4");
-          break;
-        case 68:
-          document
-            .getElementByClassName("black Ds Ds4")
-            .classList.remove("active");
-          document.toggleActive("Ds4");
-          break;
-        case 70:
-          document
-            .getElementByClassName("white E E4")
-            .classList.remove("active");
-          document.toggleActive("E4");
-          break;
-        case 71:
-          document
-            .getElementByClassName("white F F4")
-            .classList.remove("active");
-          document.toggleActive("F4");
-          break;
-        case 72:
-          document
-            .getElementByClassName("black Fs Fs4")
-            .classList.remove("active");
-          document.toggleActive("Fs4");
-          break;
-        case 74:
-          document
-            .getElementByClassName("white G G4")
-            .classList.remove("active");
-          document.toggleActive("G4");
-          break;
-        case 75:
-          document
-            .getElementByClassName("black Gs Gs4")
-            .classList.remove("active");
-          document.toggleActive("Gs4");
-          break;
-        case 76:
-          document
-            .getElementByClassName("white A A4")
-            .classList.remove("active");
-          document.toggleActive("A4");
-          break;
-        case 186:
-          document
-            .getElementByClassName("black As As4")
-            .classList.remove("active");
-          document.toggleActive("As4");
-          break;
-        case 222:
-          document
-            .getElementByClassName("white B B4")
-            .classList.remove("active");
-          document.toggleActive("B4");
-          break;
-        case 90:
-          document
-            .getElementByClassName("white C C5")
-            .classList.remove("active");
-          document.toggleActive("C5");
-          break;
-        case 88:
-          document
-            .getElementByClassName("black Cs Cs5")
-            .classList.remove("active");
-          document.toggleActive("Cs5");
-          break;
-        case 67:
-          document
-            .getElementByClassName("white D D5")
-            .classList.remove("active");
-          document.toggleActive("D5");
-          break;
-        case 86:
-          document
-            .getElementByClassName("black Ds Ds5")
-            .classList.remove("active");
-          document.toggleActive("Ds5");
-          break;
-        case 66:
-          document
-            .getElementByClassName("white E E5")
-            .classList.remove("active");
-          document.toggleActive("E5");
-          break;
-        case 78:
-          document
-            .getElementByClassName("white F F5")
-            .classList.remove("active");
-          document.toggleActive("F5");
-          break;
-        case 77:
-          document
-            .getElementByClassName("black Fs Fs5")
-            .classList.remove("active");
-          document.toggleActive("Fs5");
-          break;
-        case 188:
-          document
-            .getElementByClassName("white G G5")
-            .classList.remove("active");
-          document.toggleActive("G5");
-          break;
-        case 190:
-          document
-            .getElementByClassName("black Gs Gs5")
-            .classList.remove("active");
-          document.toggleActive("Gs5");
-          break;
-        case 191:
-          document
-            .getElementByClassName("white A A5")
-            .classList.remove("active");
-          document.toggleActive("A5");
-          break;
-        case 37:
-          document
-            .getElementByClassName("black As As5")
-            .classList.remove("active");
-          document.toggleActive("As5");
-          break;
-        case 39:
-          document
-            .getElementByClassName("white B B5")
-            .classList.remove("active");
-          document.toggleActive("B5");
-          break;
+        }
       }
     },
 
@@ -835,6 +385,11 @@ li.black span {
 
 li {
   transition: background-color 0.2s;
+}
+
+/* One key off so just gonna hide it :) */
+.Cs6 {
+  visibility: hidden !important;
 }
 
 .active {

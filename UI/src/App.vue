@@ -85,7 +85,11 @@
         </v-alert>
       </div>
       <div v-else>
-        <Piano :octave-start="1" :octave-end="6" />
+        <Piano
+          :octave-start="2"
+          :octave-end="5"
+          :connection="this.connection"
+        />
       </div>
     </v-main>
   </v-app>
@@ -267,9 +271,12 @@ export default {
 
       this.listenToWebsocketMessage();
 
+      var d = new Date();
+      var time = d.getTime();
       var mockMessage = {
         eventName: "keyboardPress",
-        message: "abcdefgh"
+        message: "abcdefgh",
+        time: time
       };
       this.sendWebsocketMessage(mockMessage);
     },
@@ -282,7 +289,8 @@ export default {
           EventName: socketPayload.eventName,
           EventPayload: {
             username: this.connection.username,
-            message: socketPayload.message
+            message: socketPayload.message,
+            time: socketPayload.time
           }
         })
       );
