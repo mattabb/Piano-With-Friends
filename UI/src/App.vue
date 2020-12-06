@@ -171,7 +171,7 @@ export default {
     verifyValidUser(username) {
       var lastFive = username.substr(username.length - 5);
       var lastFiveInt = Number(lastFive);
-      console.log(lastFiveInt)
+      console.log(lastFiveInt);
       if (!Number.isInteger(lastFiveInt)) {
         return false;
       } else {
@@ -201,7 +201,7 @@ export default {
         console.log("Error connection:", event);
         this.setConnectionError();
         if (this.isConnected) {
-          this.setIsConnected()
+          this.setIsConnected();
         }
       });
     },
@@ -220,9 +220,9 @@ export default {
     },
 
     setWebsocketMessageListener() {
-      this.connection.ws.onmessage = (messageEvent) => {
+      this.connection.ws.onmessage = messageEvent => {
         const socketPayload = JSON.parse(messageEvent.data);
-        console.log("received message from backend...", socketPayload)
+        console.log("received message from backend...", socketPayload);
 
         switch (socketPayload.EventName) {
           // Join case
@@ -255,7 +255,7 @@ export default {
             break;
           }
         }
-      }
+      };
     },
 
     onWebsocketOpen(event) {
@@ -276,7 +276,7 @@ export default {
 
     // this is how we send messages to the backend
     sendWebsocketMessage(socketPayload) {
-      console.log("message being sent", socketPayload)
+      console.log("message being sent", socketPayload);
       this.connection.ws.send(
         JSON.stringify({
           EventName: socketPayload.eventName,
@@ -299,7 +299,7 @@ export default {
     listenToWebsocketMessage() {
       // If we have no connection, we can't listen
       if (this.connection.ws === null) {
-        console.log("hit error in listen to websocket message")
+        console.log("hit error in listen to websocket message");
         return;
       }
 

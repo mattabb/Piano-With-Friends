@@ -1,10 +1,5 @@
 <template>
-  <div
-    class="keyboard"
-    :style="style"
-    @keyup="keyUpMonitor"
-    @keydown="keyDownMonitor"
-  >
+  <div class="keyboard" :style="style">
     <ul>
       <li
         v-for="(key, index) in keys"
@@ -14,7 +9,9 @@
         @mouseup="toggleActive(key.name)"
         :class="[...key.class, { active: noteActive(key.name) }]"
       >
-        <span>{{ key.name }} </span>
+        <span v-on:keyup="keyUpMonitor" v-on:keydown="keyDownMonitor"
+          >{{ key.name }}
+        </span>
       </li>
     </ul>
   </div>
@@ -254,291 +251,231 @@ export default {
       console.log(pianoState);
       switch (keyPressed) {
         case 192:
-          document
-            .getElementByClassName("white C C2")
-            .classList.add(this.active);
+          document.getElementByClassName("white C C2").classList.add("active");
           document.toggleActive("C2");
           break;
         case 49:
           document
             .getElementByClassName("black Cs Cs2")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Cs2");
           break;
         case 50:
-          document
-            .getElementByClassName("white D D2")
-            .classList.add(this.active);
+          document.getElementByClassName("white D D2").classList.add("active");
           document.toggleActive("D2");
           break;
         case 51:
-          document
-            .getElementByClassName("black D Ds2")
-            .classList.add(this.active);
+          document.getElementByClassName("black D Ds2").classList.add("active");
           document.toggleActive("Ds2");
           break;
         case 52:
-          document
-            .getElementByClassName("white E E2")
-            .classList.add(this.active);
+          document.getElementByClassName("white E E2").classList.add("active");
           document.toggleActive("E2");
           break;
         case 53:
-          document
-            .getElementByClassName("white F F2")
-            .classList.add(this.active);
+          document.getElementByClassName("white F F2").classList.add("active");
           document.toggleActive("F2");
           break;
         case 54:
-          document
-            .getElementByClassName("black F Fs2")
-            .classList.add(this.active);
+          document.getElementByClassName("black F Fs2").classList.add("active");
           document.toggleActive("Fs2");
           break;
         case 55:
-          document
-            .getElementByClassName("white G G2")
-            .classList.add(this.active);
+          document.getElementByClassName("white G G2").classList.add("active");
           document.toggleActive("G2");
           break;
         case 56:
           document
             .getElementByClassName("black Gs Gs2")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Gs2");
           break;
         case 57:
-          document
-            .getElementByClassName("white A A2")
-            .classList.add(this.active);
+          document.getElementByClassName("white A A2").classList.add("active");
           document.toggleActive("A2");
           break;
         case 48:
           document
             .getElementByClassName("black As As2")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("As2");
           break;
         case 189:
-          document
-            .getElementByClassName("white B B2")
-            .classList.add(this.active);
+          document.getElementByClassName("white B B2").classList.add("active");
           document.toggleActive("B2");
           break;
         case 187:
-          document
-            .getElementByClassName("white C C3")
-            .classList.add(this.active);
+          document.getElementByClassName("white C C3").classList.add("active");
           document.toggleActive("C3");
           break;
         case 81:
           document
             .getElementByClassName("black Cs Cs3")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Cs3");
           break;
         case 87:
-          document
-            .getElementByClassName("white D D3")
-            .classList.add(this.active);
+          document.getElementByClassName("white D D3").classList.add("active");
           document.toggleActive("D3");
           break;
         case 69:
           document
             .getElementByClassName("black Ds Ds3")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Ds3");
           break;
         case 82:
-          document
-            .getElementByClassName("white E E3")
-            .classList.add(this.active);
+          document.getElementByClassName("white E E3").classList.add("active");
           document.toggleActive("E3");
           break;
         case 84:
-          document
-            .getElementByClassName("white F F3")
-            .classList.add(this.active);
+          document.getElementByClassName("white F F3").classList.add("active");
           document.toggleActive("F3");
           break;
         case 89:
           document
             .getElementByClassName("black Fs Fs3")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Fs3");
           break;
         case 85:
-          document
-            .getElementByClassName("white G G3")
-            .classList.add(this.active);
+          document.getElementByClassName("white G G3").classList.add("active");
           document.toggleActive("G3");
           break;
         case 73:
           document
             .getElementByClassName("black Gs Gs3")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Gs3");
           break;
         case 79:
-          document
-            .getElementByClassName("white A A3")
-            .classList.add(this.active);
+          document.getElementByClassName("white A A3").classList.add("active");
           document.toggleActive("A3");
           break;
         case 80:
           document
             .getElementByClassName("black As As3")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("As3");
           break;
         case 219:
-          document
-            .getElementByClassName("white B B3")
-            .classList.add(this.active);
+          document.getElementByClassName("white B B3").classList.add("active");
           document.toggleActive("B3");
           break;
         case 221:
-          document
-            .getElementByClassName("white C C4")
-            .classList.add(this.active);
+          document.getElementByClassName("white C C4").classList.add("active");
           document.toggleActive("C4");
           break;
         case 65:
           document
             .getElementByClassName("black Cs Cs4")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Cs4");
           break;
         case 83:
-          document
-            .getElementByClassName("white D D4")
-            .classList.add(this.active);
+          document.getElementByClassName("white D D4").classList.add("active");
           document.toggleActive("D4");
           break;
         case 68:
           document
             .getElementByClassName("black Ds Ds4")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Ds4");
           break;
         case 70:
-          document
-            .getElementByClassName("white E E4")
-            .classList.add(this.active);
+          document.getElementByClassName("white E E4").classList.add("active");
           document.toggleActive("E4");
           break;
         case 71:
-          document
-            .getElementByClassName("white F F4")
-            .classList.add(this.active);
+          document.getElementByClassName("white F F4").classList.add("active");
           document.toggleActive("F4");
           break;
         case 72:
           document
             .getElementByClassName("black Fs Fs4")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Fs4");
           break;
         case 74:
-          document
-            .getElementByClassName("white G G4")
-            .classList.add(this.active);
+          document.getElementByClassName("white G G4").classList.add("active");
           document.toggleActive("G4");
           break;
         case 75:
           document
             .getElementByClassName("black Gs Gs4")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Gs4");
           break;
         case 76:
-          document
-            .getElementByClassName("white A A4")
-            .classList.add(this.active);
+          document.getElementByClassName("white A A4").classList.add("active");
           document.toggleActive("A4");
           break;
         case 186:
           document
             .getElementByClassName("black As As4")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("As4");
           break;
         case 222:
-          document
-            .getElementByClassName("white B B4")
-            .classList.add(this.active);
+          document.getElementByClassName("white B B4").classList.add("active");
           document.toggleActive("B4");
           break;
         case 90:
-          document
-            .getElementByClassName("white C C5")
-            .classList.add(this.active);
+          document.getElementByClassName("white C C5").classList.add("active");
           document.toggleActive("C5");
           break;
         case 88:
           document
             .getElementByClassName("black Cs Cs5")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Cs5");
           break;
         case 67:
-          document
-            .getElementByClassName("white D D5")
-            .classList.add(this.active);
+          document.getElementByClassName("white D D5").classList.add("active");
           document.toggleActive("D5");
           break;
         case 86:
           document
             .getElementByClassName("black Ds Ds5")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Ds5");
           break;
         case 66:
-          document
-            .getElementByClassName("white E E5")
-            .classList.add(this.active);
+          document.getElementByClassName("white E E5").classList.add("active");
           document.toggleActive("E5");
           break;
         case 78:
-          document
-            .getElementByClassName("white F F5")
-            .classList.add(this.active);
+          document.getElementByClassName("white F F5").classList.add("active");
           document.toggleActive("F5");
           break;
         case 77:
           document
             .getElementByClassName("black Fs Fs5")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Fs5");
           break;
         case 188:
-          document
-            .getElementByClassName("white G G5")
-            .classList.add(this.active);
+          document.getElementByClassName("white G G5").classList.add("active");
           document.toggleActive("G5");
           break;
         case 190:
           document
             .getElementByClassName("black Gs Gs5")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("Gs5");
           break;
         case 191:
-          document
-            .getElementByClassName("white A A5")
-            .classList.add(this.active);
+          document.getElementByClassName("white A A5").classList.add("active");
           document.toggleActive("A5");
           break;
         case 37:
           document
             .getElementByClassName("black As As5")
-            .classList.add(this.active);
+            .classList.add("active");
           document.toggleActive("As5");
           break;
         case 39:
-          document
-            .getElementByClassName("white B B5")
-            .classList.add(this.active);
+          document.getElementByClassName("white B B5").classList.add("active");
           document.toggleActive("B5");
           break;
       }
@@ -551,289 +488,289 @@ export default {
         case 192:
           document
             .getElementByClassName("white C C2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("C2");
           break;
         case 49:
           document
             .getElementByClassName("black Cs Cs2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Cs2");
           break;
         case 50:
           document
             .getElementByClassName("white D D2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("D2");
           break;
         case 51:
           document
             .getElementByClassName("black D Ds2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Ds2");
           break;
         case 52:
           document
             .getElementByClassName("white E E2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("E2");
           break;
         case 53:
           document
             .getElementByClassName("white F F2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("F2");
           break;
         case 54:
           document
             .getElementByClassName("black F Fs2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Fs2");
           break;
         case 55:
           document
             .getElementByClassName("white G G2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("G2");
           break;
         case 56:
           document
             .getElementByClassName("black Gs Gs2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Gs2");
           break;
         case 57:
           document
             .getElementByClassName("white A A2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("A2");
           break;
         case 48:
           document
             .getElementByClassName("black As As2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("As2");
           break;
         case 189:
           document
             .getElementByClassName("white B B2")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("B2");
           break;
         case 187:
           document
             .getElementByClassName("white C C3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("C3");
           break;
         case 81:
           document
             .getElementByClassName("black Cs Cs3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Cs3");
           break;
         case 87:
           document
             .getElementByClassName("white D D3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("D3");
           break;
         case 69:
           document
             .getElementByClassName("black Ds Ds3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Ds3");
           break;
         case 82:
           document
             .getElementByClassName("white E E3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("E3");
           break;
         case 84:
           document
             .getElementByClassName("white F F3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("F3");
           break;
         case 89:
           document
             .getElementByClassName("black Fs Fs3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Fs3");
           break;
         case 85:
           document
             .getElementByClassName("white G G3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("G3");
           break;
         case 73:
           document
             .getElementByClassName("black Gs Gs3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Gs3");
           break;
         case 79:
           document
             .getElementByClassName("white A A3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("A3");
           break;
         case 80:
           document
             .getElementByClassName("black As As3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("As3");
           break;
         case 219:
           document
             .getElementByClassName("white B B3")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("B3");
           break;
         case 221:
           document
             .getElementByClassName("white C C4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("C4");
           break;
         case 65:
           document
             .getElementByClassName("black Cs Cs4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Cs4");
           break;
         case 83:
           document
             .getElementByClassName("white D D4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("D4");
           break;
         case 68:
           document
             .getElementByClassName("black Ds Ds4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Ds4");
           break;
         case 70:
           document
             .getElementByClassName("white E E4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("E4");
           break;
         case 71:
           document
             .getElementByClassName("white F F4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("F4");
           break;
         case 72:
           document
             .getElementByClassName("black Fs Fs4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Fs4");
           break;
         case 74:
           document
             .getElementByClassName("white G G4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("G4");
           break;
         case 75:
           document
             .getElementByClassName("black Gs Gs4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Gs4");
           break;
         case 76:
           document
             .getElementByClassName("white A A4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("A4");
           break;
         case 186:
           document
             .getElementByClassName("black As As4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("As4");
           break;
         case 222:
           document
             .getElementByClassName("white B B4")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("B4");
           break;
         case 90:
           document
             .getElementByClassName("white C C5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("C5");
           break;
         case 88:
           document
             .getElementByClassName("black Cs Cs5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Cs5");
           break;
         case 67:
           document
             .getElementByClassName("white D D5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("D5");
           break;
         case 86:
           document
             .getElementByClassName("black Ds Ds5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Ds5");
           break;
         case 66:
           document
             .getElementByClassName("white E E5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("E5");
           break;
         case 78:
           document
             .getElementByClassName("white F F5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("F5");
           break;
         case 77:
           document
             .getElementByClassName("black Fs Fs5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Fs5");
           break;
         case 188:
           document
             .getElementByClassName("white G G5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("G5");
           break;
         case 190:
           document
             .getElementByClassName("black Gs Gs5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("Gs5");
           break;
         case 191:
           document
             .getElementByClassName("white A A5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("A5");
           break;
         case 37:
           document
             .getElementByClassName("black As As5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("As5");
           break;
         case 39:
           document
             .getElementByClassName("white B B5")
-            .classList.remove(this.active);
+            .classList.remove("active");
           document.toggleActive("B5");
           break;
       }
