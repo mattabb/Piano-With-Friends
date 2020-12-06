@@ -20,6 +20,8 @@
 <script>
 import pianoState from "../library/piano-state";
 import { addKeyCodeToKeys } from "../library/piano-mappings";
+//import playSound from "../library/playSound";
+import { Howl } from "howler";
 
 const WHITE_KEYS = ["C", "D", "E", "F", "G", "A", "B"];
 const BLACK_KEYS = ["C#", "D#", null, "F#", "G#", "A#", null];
@@ -338,6 +340,11 @@ export default {
           this.sendWebsocketMessage(socketPayload);
         }
       }
+      var sound = new Howl({
+        src: ["b4.mp3"],
+      });
+      sound.play();
+      console.log(sound.state())
     },
 
     keyUpMonitor(response) {
