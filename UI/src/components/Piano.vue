@@ -232,17 +232,45 @@ export default {
       );
     },
 
-    // toggleTrue(note) {
-    //   if (this.pianoState[note] == false) {
-    //     this.pianoState[note] = true
-    //   }
-    // },
+    toggleTrue(note) {
+      var keys = this.keysData;
+      for (var key of keys) {
+        if (key.name == note) {
+          let classString = String(
+            key.class[0] + " " + key.class[1] + " " + key.class[2]
+          );
+          console.log(key);
+          document
+            .getElementsByClassName(classString)[0]
+            .classList.add("active");
 
-    // toggleFalse(note) {
-    //   if (this.pianoState[note]) {
-    //     this.pianoState[note] = false
-    //   }
-    // },
+          var d = new Date();
+          var time = d.getTime();
+          var socketPayload = {
+            EventName: "keyboardPress",
+            EventPayload: {
+              username: this.conn.username,
+              message: key.keyCode,
+              time: time
+            }
+          };
+          this.sendWebsocketMessage(socketPayload);
+        }
+      }
+    },
+
+    toggleFalse(note) {
+      var keys = this.keysData;
+      for (var key of keys) {
+        if (key.name == note) {
+          let classString =
+            key.class[0] + " " + key.class[1] + " " + key.class[2];
+          document
+            .getElementsByClassName(classString)[0]
+            .classList.remove("active");
+        }
+      }
+    },
 
     setWhiteKeys(keys) {
       for (let i = this.offsetStart, j = 0; j < this.totalWhiteKeys; i++, j++) {
