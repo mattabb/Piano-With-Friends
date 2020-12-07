@@ -22,7 +22,6 @@ import pianoState from "../library/piano-state";
 import { addKeyCodeToKeys } from "../library/piano-mappings";
 import { Howl } from "howler";
 
-
 const WHITE_KEYS = ["C", "D", "E", "F", "G", "A", "B"];
 const BLACK_KEYS = ["C#", "D#", null, "F#", "G#", "A#", null];
 const MIN_OCTAVE = 0;
@@ -231,14 +230,17 @@ export default {
           }
         })
       );
-      console.log("json on frontend is", JSON.stringify({
+      console.log(
+        "json on frontend is",
+        JSON.stringify({
           eventName: socketPayload.EventName,
           EventPayload: {
             username: this.connection.username,
             message: socketPayload.EventPayload.message,
             time: socketPayload.EventPayload.time
           }
-        }));
+        })
+      );
       console.log("eventname on frontend is", socketPayload.EventName);
     },
 
@@ -251,7 +253,7 @@ export default {
             key.class[0] + " " + key.class[1] + " " + key.class[2]
           );
           console.log(key);
-          keyPressedName = key.class[2]
+          keyPressedName = key.class[2];
           console.log(keyPressedName + "!");
           document
             .getElementsByClassName(classString)[0]
@@ -267,7 +269,7 @@ export default {
               time: time
             }
           };
-          console.log("socketpayload",socketPayload);
+          console.log("socketpayload", socketPayload);
           this.sendWebsocketMessage(socketPayload);
         }
       }
@@ -278,11 +280,13 @@ export default {
         html5: true,
         autoplay: true,
         volume: 1.0,
-        format: 'mp3',
-        onload: function() { console.log('song loaded!')},
+        format: "mp3",
+        onload: function() {
+          console.log("song loaded!");
+        }
       });
       sound.play();
-      console.log(sound.state())
+      console.log(sound.state());
     },
 
     toggleFalse(note) {
@@ -348,7 +352,7 @@ export default {
             key.class[0] + " " + key.class[1] + " " + key.class[2]
           );
           console.log(key);
-          keyPressedName = key.class[2]
+          keyPressedName = key.class[2];
           console.log(keyPressedName + "!");
           document
             .getElementsByClassName(classString)[0]
@@ -374,11 +378,13 @@ export default {
         html5: true,
         autoplay: true,
         volume: 1.0,
-        format: 'mp3',
-        onload: function() { console.log('song loaded!')},
+        format: "mp3",
+        onload: function() {
+          console.log("song loaded!");
+        }
       });
       sound.play();
-      console.log(sound.state())
+      console.log(sound.state());
     },
 
     keyUpMonitor(response) {

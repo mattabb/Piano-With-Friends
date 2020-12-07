@@ -23,7 +23,7 @@
 
       <v-spacer></v-spacer>
 
-      <div v-if="isConnected"> Username: {{connection.username}} </div>
+      <div v-if="isConnected">Username: {{ connection.username }}</div>
 
       <!-- <v-btn
         href="https://github.com/vuetifyjs/vuetify/releases/latest"
