@@ -67,6 +67,22 @@ You can visit Jest's homepage here:
 
 https://jestjs.io/
 
+### TonalJS
+
+Tonal is a music theory library. It contains functions to manipulate tonal elements of music (note, intervals, chords, scales, modes, keys). It deals with abstractions (not actual music or sound).  We use this mainly in our piano-mapping.js file
+
+You can visit Tonal's github here:
+
+https://github.com/tonaljs/tonal
+
+### HowlerJS
+
+Howler is a popular JavaScript audio library which we utilize to play the sound for our notes.  One of the key features that Howler includes is it's auto-caching.  This means that loaded sounds are automatically cached and re-used on subsequent calls which allows for better performance and bandwidth.  We use this in our Piano.vue file on key press and keep our audio files in the public folder in our UI.
+
+You can visit Howler's homepage here:
+
+https://howlerjs.com/
+
 
 ### Back-end 
 
@@ -155,12 +171,11 @@ Show examples of usage:
 `put-your-code-here`
 
 ## Features
-* Vue-CLI Front-end utilizing Vuetify and websockets
+* Vue-CLI Front-end utilizing Vuetify, HowlerJS, TonalJS, websockets and more!
 * Go back-end utilizing gorilla/mux and gorilla/websocket
 
 To-do list:
-* Wow improvement to be done 1
-* Wow improvement to be done 2
+* Improve the look of our website using Vue
 
 ## Status
 Project is: _in progress_
