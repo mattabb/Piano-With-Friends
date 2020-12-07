@@ -37,7 +37,7 @@ type Client struct {
 	send                chan SocketEventStruct
 	username            string
 	recording           bool
-	recordNotes         chan EventPayloadStruct
+	recordNotes         chan SocketEventStruct
 }
 
 /*
