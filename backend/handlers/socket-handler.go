@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// Constants for delays, max message sizes and ping periods
 const (
 	writeWait = 10 * time.Second
 
@@ -38,7 +39,7 @@ func CreateNewSocketUser(pool *Pool, connection *websocket.Conn, username string
 		webSocketConnection: connection,
 		send:                make(chan SocketEventStruct),
 		username:            username,
-		recordNotes:         make(chan EventPayloadStruct),
+		recordNotes:         make(chan SocketEventStruct),
 	}
 
 	go client.writePump()
@@ -101,14 +102,16 @@ func HandleUserDisconnectEvent(pool *Pool, client *Client) {
 * @param {SocketEventStruct} payload => contains message being sent along websocket
 * @return N/A
  */
-func BroadcastSocketEventToAllClient(pool *Pool, payload SocketEventStruct) {
+func BroadcastSocketEventToAllClient(self *Client, payload SocketEventStruct) {
 
-	for client := range pool.clients {
-		client.send <- payload
-		log.Print("the pool is: ", pool)
+	for client := range self.pool.clients {
+		if client != self {
+			client.send <- payload
+			log.Println("sent payload")
+		}
+		log.Print("the pool is: ", self.pool)
 		log.Print("send channel ", client.send, "\n", "payload: ", payload)
 	}
-	log.Print("we out")
 }
 
 /*
@@ -122,36 +125,31 @@ func BroadcastSocketEventToAllClient(pool *Pool, payload SocketEventStruct) {
 * @return N/A
  */
 func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStruct) {
-	var socketEventResponse SocketEventStruct
 	switch socketEventPayload.EventName {
 	// When someone joins
 	case "join":
-		BroadcastSocketEventToAllClient(client.pool, SocketEventStruct{
-			EventName:    "join",
+		BroadcastSocketEventToAllClient(client, SocketEventStruct{
+			EventName:    socketEventPayload.EventName,
 			EventPayload: socketEventPayload.EventPayload,
 		})
 
 	// When someone disconnects
-	case "disconnect:":
+	case "disconnect":
 		log.Print("Disconnect event triggered")
-		BroadcastSocketEventToAllClient(client.pool, SocketEventStruct{
-			EventName:    "disconnect",
+		BroadcastSocketEventToAllClient(client, SocketEventStruct{
+			EventName:    socketEventPayload.EventName,
 			EventPayload: socketEventPayload.EventPayload,
 		})
 
 	// When someone presses the keyboard
 	case "keyboardPress":
-		socketEventResponse.EventName = "keyboardPress"
-		socketEventResponse.EventPayload = socketEventPayload.EventPayload
 		if client.recording {
-			client.recordNotes <- socketEventPayload.EventPayload
+			client.recordNotes <- socketEventPayload
 		}
-		BroadcastSocketEventToAllClient(client.pool, socketEventResponse)
+		BroadcastSocketEventToAllClient(client, socketEventPayload)
 
 	// When someone presses record button
 	case "record":
-		socketEventResponse.EventName = "record"
-		socketEventResponse.EventPayload = socketEventPayload.EventPayload
 		beginRecord(client)
 	}
 
@@ -190,6 +188,55 @@ func (c *Client) readJSON() (SocketEventStruct, error) {
 	}
 
 	return socketEventPayload, nil
+}
+
+/*
+* @function encodeJSON
+* @description
+* Encodes JSON from send channel, and sets the write deadline
+
+* @family Client
+* @param payload SocketEventStruct
+* @return []byte, error
+ */
+func (c *Client) encodeJSON(payload SocketEventStruct) ([]byte, error) {
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		log.Print("error marshalling payload")
+		return jsonPayload, err
+	}
+
+	// Write now
+	c.webSocketConnection.SetWriteDeadline(time.Now().Add(writeWait))
+
+	return jsonPayload, nil
+}
+
+/*
+* @function writeJSON
+* @description
+* Creates JSON writer and writes to websocket using writerf
+
+* @family Client
+* @param payload []byte
+* @return []byte, error
+ */
+func (c *Client) writeJSON(jsonData []byte) error {
+	w, err := c.webSocketConnection.NextWriter(websocket.TextMessage)
+	if err != nil {
+		return err
+	}
+
+	_, errr := w.Write(jsonData)
+	if errr != nil {
+		log.Print("error when trying to write", errr)
+		return errr
+	}
+
+	w.Close()
+	log.Println("Closed writer")
+
+	return nil
 }
 
 /*
@@ -240,16 +287,10 @@ func (c *Client) writePump() {
 		case payload, ok := <-c.send:
 
 			log.Print("Hit writepump for ", c.username, " payload is: ", payload)
-			// TODO: Separate this into a writeJSON() function
-			// Encode our payload
-			jsonPayload, err := json.Marshal(payload)
-			if err != nil {
-				log.Print("error marshalling payload")
+			jsonPayload, encodeErr := c.encodeJSON(payload)
+			if encodeErr != nil {
 				return
 			}
-
-			// Write now
-			c.webSocketConnection.SetWriteDeadline(time.Now().Add(writeWait))
 
 			if !ok {
 				log.Print("not ok")
@@ -257,32 +298,13 @@ func (c *Client) writePump() {
 				return
 			}
 
-			w, err := c.webSocketConnection.NextWriter(websocket.TextMessage)
+			err := c.writeJSON(jsonPayload)
 			if err != nil {
+				log.Println(err)
 				return
 			}
 
-			_, errr := w.Write(jsonPayload)
-			if errr != nil {
-				log.Print("error when trying to write", errr)
-				return
-			}
-
-			// // used to see all of the previous messages
-			//n := len(c.send)
-			// for i := 0; i < n; i++ {
-			// 	json, err := json.Marshal(<-c.send)
-			// 	if err != nil {
-			// 		log.Print("error marshalling in for loop")
-			// 		return
-			// 	}
-			// 	w.Write(json)
-			// }
-
-			if err := w.Close(); err != nil {
-				log.Print("closing the writer")
-				return
-			}
+			return
 
 		case <-ticker.C:
 			c.webSocketConnection.SetWriteDeadline(time.Now().Add(writeWait))
@@ -305,16 +327,4 @@ func unRegisterAndCloseConnection(c *Client) {
 	c.pool.unregister <- c
 	close(c.send)
 	c.webSocketConnection.Close()
-}
-
-/*
-* @function setSocketPayloadReadConfig
-* @description
-* Sets our configurations => message delay limits, message length limits, etc.
-
-* @param {*Client} c => Contains client
-* @return N/A
- */
-func setSocketPayloadReadConfig(c *Client) {
-	// Set all of our configurations... => Message delay limits, etc.
 }

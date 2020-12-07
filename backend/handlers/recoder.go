@@ -2,39 +2,31 @@ package handlers
 
 import "time"
 
-// Tuple to store key, time pairs
-type Pair struct {
-	key  string
-	time int
-}
-
 func beginRecord(client *Client) {
 	client.recording = true
-	var notes []Pair
+	var notes []SocketEventStruct
 	for client.recording {
 		payloadStruct := <-client.recordNotes
-		message := payloadStruct.Message
-		time := payloadStruct.Time
-		notes = append(notes, Pair{key: message, time: time})
+		notes = append(notes, payloadStruct)
 	}
 
-	BroadcastSocketEventToAllClient(client.pool, SocketEventStruct{
+	BroadcastSocketEventToAllClient(client, SocketEventStruct{
 		EventName: "keyboardPress",
 		EventPayload: EventPayloadStruct{
-			User:    client.username,
-			Message: notes[0].key,
-			Time:    notes[0].time,
+			User:    notes[0].EventName,
+			Message: notes[0].EventPayload.Message,
+			Time:    notes[0].EventPayload.Time,
 		},
 	})
 	for i := 1; i < len(notes); i++ {
-		delay := notes[i].time - notes[i-1].time
+		delay := notes[i].EventPayload.Time - notes[i-1].EventPayload.Time
 		time.Sleep(time.Duration(delay) * time.Millisecond)
-		BroadcastSocketEventToAllClient(client.pool, SocketEventStruct{
+		BroadcastSocketEventToAllClient(client, SocketEventStruct{
 			EventName: "keyboardPress",
 			EventPayload: EventPayloadStruct{
-				User:    client.username,
-				Message: notes[i].key,
-				Time:    notes[i].time,
+				User:    notes[i].EventName,
+				Message: notes[i].EventPayload.Message,
+				Time:    notes[i].EventPayload.Time,
 			},
 		})
 	}
