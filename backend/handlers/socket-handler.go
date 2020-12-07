@@ -124,7 +124,6 @@ func BroadcastSocketEventToAllClient(self *Client, payload SocketEventStruct) {
 * @return N/A
  */
 func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStruct) {
-	var socketEventResponse SocketEventStruct
 	switch socketEventPayload.EventName {
 	// When someone joins
 	case "join":
