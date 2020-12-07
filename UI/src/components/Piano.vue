@@ -221,17 +221,25 @@ export default {
 
     // Probably should abstract this since it's used in piano.vue and app.vue
     sendWebsocketMessage(socketPayload) {
-      console.log("message being sent", socketPayload);
       this.connection.ws.send(
         JSON.stringify({
-          EventName: socketPayload.eventName,
+          eventName: socketPayload.EventName,
           EventPayload: {
             username: this.connection.username,
-            message: socketPayload.message,
-            time: socketPayload.time
+            message: socketPayload.EventPayload.message,
+            time: socketPayload.EventPayload.time
           }
         })
       );
+      console.log("json on frontend is", JSON.stringify({
+          eventName: socketPayload.EventName,
+          EventPayload: {
+            username: this.connection.username,
+            message: socketPayload.EventPayload.message,
+            time: socketPayload.EventPayload.time
+          }
+        }));
+      console.log("eventname on frontend is", socketPayload.EventName);
     },
 
     toggleTrue(note) {
@@ -255,10 +263,11 @@ export default {
             EventName: "keyboardPress",
             EventPayload: {
               username: this.conn.username,
-              message: key.keyCode,
+              message: String(key.keyCode),
               time: time
             }
           };
+          console.log("socketpayload",socketPayload);
           this.sendWebsocketMessage(socketPayload);
         }
       }
@@ -351,7 +360,7 @@ export default {
             EventName: "keyboardPress",
             EventPayload: {
               username: this.conn.username,
-              message: key.keyCode,
+              message: String(key.keyCode),
               time: time
             }
           };

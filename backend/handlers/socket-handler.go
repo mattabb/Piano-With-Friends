@@ -172,7 +172,10 @@ func (c *Client) readJSON() (SocketEventStruct, error) {
 	decoder := json.NewDecoder(bytes.NewReader(payload))
 	decoderErr := decoder.Decode(&socketEventPayload)
 
-	log.Print("read JSON from ", c.username, " ... event payload from websocket is: ", socketEventPayload.EventPayload)
+	log.Print("read JSON from ", c.username, " ... event name from websocket is: ", socketEventPayload.EventName)
+	log.Print("read JSON from ", c.username, " ... event payload Username from websocket is: ", socketEventPayload.EventPayload.User)
+	log.Print("read JSON from ", c.username, " ... event payload Message from websocket is: ", socketEventPayload.EventPayload.Message)
+	log.Print("read JSON from ", c.username, " ... event payload Time from websocket is: ", socketEventPayload.EventPayload.Time)
 
 	if decoderErr != nil {
 		log.Printf("error: %v", decoderErr)

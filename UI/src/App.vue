@@ -112,7 +112,7 @@ export default {
       ws: null,
       username: ""
     },
-    serverUrl: "localhost:8000",
+    serverUrl: "3.236.179.206",
     isConnected: false,
     connectionError: false,
     loader: null,
