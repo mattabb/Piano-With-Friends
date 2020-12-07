@@ -26,7 +26,11 @@ Both the client and server utilize Docker and are in their own separate containe
 
 
 ## Screenshots
-![Example screenshot](./img/screenshot.png)
+Below is an image of the home screen that you are greeted to when entering the website
+![Home Page](./screenshots/HomePage.png)
+
+After you are connected, your webpage should change to show this:
+![Piano Page](./screenshots/PianoPage.png)
 
 ## Technologies
 ### Deployment
