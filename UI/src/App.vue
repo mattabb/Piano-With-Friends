@@ -23,6 +23,8 @@
 
       <v-spacer></v-spacer>
 
+      <div v-if="isConnected"> Username: {{connection.username}} </div>
+
       <!-- <v-btn
         href="https://github.com/vuetifyjs/vuetify/releases/latest"
         target="_blank"
@@ -80,7 +82,7 @@
         <v-alert v-if="connectionErr" dense outlined type="error">
           Error when connecting to the server, please try again later.
         </v-alert>
-        <v-alert v-if="invalidUsername" dense outlined type="error">
+        <v-alert v-if="invalidUsername" dense outlined type="info">
           Please enter a valid username, empty usernames are not accepted.
         </v-alert>
       </div>
@@ -318,7 +320,7 @@ export default {
 </script>
 
 <style scoped>
-title-font {
+.title-font {
   font-family: "Lobster", cursive !important;
   font: "Lobster";
 }

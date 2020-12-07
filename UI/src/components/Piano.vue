@@ -328,7 +328,7 @@ export default {
 
         const key = {
           name: `${keyName}${octave}`,
-          class: ["black", keyNameClass, `${keyNameClass}${octave}`],
+          class: ["offblack", keyNameClass, `${keyNameClass}${octave}`],
           style: {
             "grid-column": `${j === 0 ? 3 : 6 + (j - 1) * 3} / span 2`
           }
@@ -338,7 +338,7 @@ export default {
       }
     },
 
-     keyDownMonitor(response) {
+    keyDownMonitor(response) {
       var keyPressed = response.event.keyCode;
       var keyPressedName = "";
       var keys = this.keysData;
@@ -441,7 +441,7 @@ li.black span {
   border-color: black !important;
 }
 
-.black {
+.offblack {
   grid-row: 1 / span 2;
   background-color: black;
   color: white;
@@ -464,53 +464,5 @@ li {
 
 .active {
   background-color: rgb(255, 0, 0) !important;
-}
-
-.Fs.active {
-  background-color: rgb(174, 0, 0);
-}
-
-.G.active {
-  background-color: rgb(255, 0, 0);
-}
-
-.Gs.active {
-  background-color: rgb(255, 0, 0);
-}
-
-.A.active {
-  background-color: rgb(255, 102, 0);
-}
-
-.As.active {
-  background-color: rgb(255, 239, 0);
-}
-
-.B.active {
-  background-color: rgb(153, 255, 0);
-}
-
-.C.active {
-  background-color: rgb(0, 40, 255);
-}
-
-.Cs.active {
-  background-color: rgb(0, 255, 242);
-}
-
-.D.active {
-  background-color: rgb(0, 122, 255);
-}
-
-.Ds.active {
-  background-color: rgb(5, 0, 255);
-}
-
-.E.active {
-  background-color: rgb(71, 0, 237);
-}
-
-.F.active {
-  background-color: rgb(99, 0, 178);
 }
 </style>
