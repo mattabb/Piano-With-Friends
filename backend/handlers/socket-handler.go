@@ -107,10 +107,10 @@ func BroadcastSocketEventToAllClient(self *Client, payload SocketEventStruct) {
 	for client := range self.pool.clients {
 		if client != self {
 			client.send <- payload
-			log.Println("sent payload")
+			// log.Println("sent payload")
 		}
-		log.Print("the pool is: ", self.pool)
-		log.Print("send channel ", client.send, "\n", "payload: ", payload)
+		// log.Print("the pool is: ", self.pool)
+		// log.Print("send channel ", client.send, "\n", "payload: ", payload)
 	}
 }
 
