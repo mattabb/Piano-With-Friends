@@ -20,6 +20,8 @@
 <script>
 import pianoState from "../library/piano-state";
 import { addKeyCodeToKeys } from "../library/piano-mappings";
+import { Howl } from "howler";
+
 
 const WHITE_KEYS = ["C", "D", "E", "F", "G", "A", "B"];
 const BLACK_KEYS = ["C#", "D#", null, "F#", "G#", "A#", null];
@@ -232,17 +234,60 @@ export default {
       );
     },
 
-    // toggleTrue(note) {
-    //   if (this.pianoState[note] == false) {
-    //     this.pianoState[note] = true
-    //   }
-    // },
+    toggleTrue(note) {
+      var keys = this.keysData;
+      var keyPressedName = "";
+      for (var key of keys) {
+        if (key.name == note) {
+          let classString = String(
+            key.class[0] + " " + key.class[1] + " " + key.class[2]
+          );
+          console.log(key);
+          keyPressedName = key.class[2]
+          console.log(keyPressedName + "!");
+          document
+            .getElementsByClassName(classString)[0]
+            .classList.add("active");
 
-    // toggleFalse(note) {
-    //   if (this.pianoState[note]) {
-    //     this.pianoState[note] = false
-    //   }
-    // },
+          var d = new Date();
+          var time = d.getTime();
+          var socketPayload = {
+            EventName: "keyboardPress",
+            EventPayload: {
+              username: this.conn.username,
+              message: key.keyCode,
+              time: time
+            }
+          };
+          this.sendWebsocketMessage(socketPayload);
+        }
+      }
+      console.log(keyPressedName);
+      console.log(`${keyPressedName}.mp3`);
+      var sound = new Howl({
+        src: [`${keyPressedName}.mp3`],
+        html5: true,
+        autoplay: true,
+        volume: 1.0,
+        format: 'mp3',
+        onload: function() { console.log('song loaded!')},
+      });
+      sound.play();
+      console.log(sound.state())
+    },
+
+    toggleFalse(note) {
+      var keys = this.keysData;
+      for (var key of keys) {
+        if (key.name == note) {
+          let classString =
+            key.class[0] + " " + key.class[1] + " " + key.class[2];
+          document
+            .getElementsByClassName(classString)[0]
+            .classList.remove("active");
+        }
+      }
+    },
 
     setWhiteKeys(keys) {
       for (let i = this.offsetStart, j = 0; j < this.totalWhiteKeys; i++, j++) {
@@ -284,8 +329,9 @@ export default {
       }
     },
 
-    keyDownMonitor(response) {
+     keyDownMonitor(response) {
       var keyPressed = response.event.keyCode;
+      var keyPressedName = "";
       var keys = this.keysData;
       for (var key of keys) {
         if (key.keyCode == keyPressed) {
@@ -293,6 +339,8 @@ export default {
             key.class[0] + " " + key.class[1] + " " + key.class[2]
           );
           console.log(key);
+          keyPressedName = key.class[2]
+          console.log(keyPressedName + "!");
           document
             .getElementsByClassName(classString)[0]
             .classList.add("active");
@@ -310,6 +358,18 @@ export default {
           this.sendWebsocketMessage(socketPayload);
         }
       }
+      console.log(keyPressedName);
+      console.log(`${keyPressedName}.mp3`);
+      var sound = new Howl({
+        src: [`${keyPressedName}.mp3`],
+        html5: true,
+        autoplay: true,
+        volume: 1.0,
+        format: 'mp3',
+        onload: function() { console.log('song loaded!')},
+      });
+      sound.play();
+      console.log(sound.state())
     },
 
     keyUpMonitor(response) {
