@@ -38,6 +38,7 @@ func CreateNewSocketUser(pool *Pool, connection *websocket.Conn, username string
 		webSocketConnection: connection,
 		send:                make(chan SocketEventStruct),
 		username:            username,
+		recordNotes:         make(chan EventPayloadStruct),
 	}
 
 	go client.writePump()
@@ -61,7 +62,7 @@ func HandleUserRegisterEvent(pool *Pool, client *Client) {
 	pool.clients[client] = true
 	handleSocketPayloadEvents(client, SocketEventStruct{
 		EventName:    "join",
-		EventPayload: client.username,
+		EventPayload: EventPayloadStruct{User: client.username},
 	})
 }
 
@@ -84,7 +85,7 @@ func HandleUserDisconnectEvent(pool *Pool, client *Client) {
 
 		handleSocketPayloadEvents(client, SocketEventStruct{
 			EventName:    "disconnect",
-			EventPayload: client.username,
+			EventPayload: EventPayloadStruct{User: client.username},
 		})
 	}
 }
@@ -142,7 +143,16 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 	case "keyboardPress":
 		socketEventResponse.EventName = "keyboardPress"
 		socketEventResponse.EventPayload = socketEventPayload.EventPayload
+		if client.recording {
+			client.recordNotes <- socketEventPayload.EventPayload
+		}
 		BroadcastSocketEventToAllClient(client.pool, socketEventResponse)
+
+	// When someone presses record button
+	case "record":
+		socketEventResponse.EventName = "record"
+		socketEventResponse.EventPayload = socketEventPayload.EventPayload
+		beginRecord(client)
 	}
 
 }

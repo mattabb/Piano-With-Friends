@@ -5,12 +5,22 @@ import (
 )
 
 /*
+	User: username of the client
+	Message: string
+*/
+type EventPayloadStruct struct {
+	User    string `json:"username"`
+	Message string `json:"message"`
+	Time    int    `json:"time"`
+}
+
+/*
 	EventName: ('join'/'disconnect'/'keyBdPressResponse') JSON which contains the eventname
 	EventPayload: JSON interface which contains our payload
 */
 type SocketEventStruct struct {
-	EventName    string      `json:"eventName"`
-	EventPayload interface{} `json:"eventPayload"`
+	EventName    string `json:"eventName"`
+	EventPayload EventPayloadStruct
 }
 
 /*
@@ -25,6 +35,8 @@ type Client struct {
 	webSocketConnection *websocket.Conn
 	send                chan SocketEventStruct
 	username            string
+	recording           bool
+	recordNotes         chan EventPayloadStruct
 }
 
 /*
