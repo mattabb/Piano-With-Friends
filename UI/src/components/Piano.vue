@@ -463,7 +463,7 @@ li {
 }
 
 .active {
-  background-color: black !important;
+  background-color: rgb(255, 0, 0) !important;
 }
 
 .Fs.active {
