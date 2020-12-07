@@ -457,6 +457,9 @@ export default {
             if (sentBy != this.conn.username) {
               sound.play();
             }
+            document
+                .getElementsByClassName(classString)[0]
+                .classList.remove("active")
             console.log(sound.state());
             break;
           }
