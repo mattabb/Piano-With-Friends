@@ -151,8 +151,12 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 	// When someone presses record button
 	case "record":
 		beginRecord(client)
-	}
 
+	// When someone presses the record button while recording
+	case "stoprecord":
+		client.recording = false
+
+	}
 }
 
 /*

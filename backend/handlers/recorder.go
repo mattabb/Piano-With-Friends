@@ -2,7 +2,6 @@ package handlers
 
 import "time"
 
-
 /*
 * @function beginRecord
 * @description
