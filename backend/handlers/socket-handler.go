@@ -202,9 +202,9 @@ func (c *Client) readJSON() (SocketEventStruct, error) {
  */
 func (c *Client) readPump() {
 	// Read from websocket
-	defer func() {
-		unRegisterAndCloseConnection(c)
-	}()
+	//defer func() {
+	//	unRegisterAndCloseConnection(c)
+	//}()
 
 	c.webSocketConnection.SetReadLimit(maxMessageSize)
 	c.webSocketConnection.SetReadDeadline(time.Now().Add(pongWait))

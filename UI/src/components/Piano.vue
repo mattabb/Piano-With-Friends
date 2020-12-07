@@ -22,7 +22,6 @@ import pianoState from "../library/piano-state";
 import { addKeyCodeToKeys } from "../library/piano-mappings";
 import { Howl } from "howler";
 
-
 const WHITE_KEYS = ["C", "D", "E", "F", "G", "A", "B"];
 const BLACK_KEYS = ["C#", "D#", null, "F#", "G#", "A#", null];
 const MIN_OCTAVE = 0;
@@ -148,6 +147,11 @@ export default {
 
     // this.pianoState = pianoState
   },
+
+  mounted() {
+    this.setWebsocketMessageListener();
+  },
+
   computed: {
     offsetStart() {
       return this.clamp(this.offsets.noteStart, MIN_NOTE, MAX_NOTE);
@@ -231,14 +235,17 @@ export default {
           }
         })
       );
-      console.log("json on frontend is", JSON.stringify({
+      console.log(
+        "json on frontend is",
+        JSON.stringify({
           eventName: socketPayload.EventName,
           EventPayload: {
             username: this.connection.username,
             message: socketPayload.EventPayload.message,
             time: socketPayload.EventPayload.time
           }
-        }));
+        })
+      );
       console.log("eventname on frontend is", socketPayload.EventName);
     },
 
@@ -251,7 +258,7 @@ export default {
             key.class[0] + " " + key.class[1] + " " + key.class[2]
           );
           console.log(key);
-          keyPressedName = key.class[2]
+          keyPressedName = key.class[2];
           console.log(keyPressedName + "!");
           document
             .getElementsByClassName(classString)[0]
@@ -267,7 +274,7 @@ export default {
               time: time
             }
           };
-          console.log("socketpayload",socketPayload);
+          console.log("socketpayload", socketPayload);
           this.sendWebsocketMessage(socketPayload);
         }
       }
@@ -278,11 +285,13 @@ export default {
         html5: true,
         autoplay: true,
         volume: 1.0,
-        format: 'mp3',
-        onload: function() { console.log('song loaded!')},
+        format: "mp3",
+        onload: function() {
+          console.log("song loaded!");
+        }
       });
       sound.play();
-      console.log(sound.state())
+      console.log(sound.state());
     },
 
     toggleFalse(note) {
@@ -328,7 +337,7 @@ export default {
 
         const key = {
           name: `${keyName}${octave}`,
-          class: ["black", keyNameClass, `${keyNameClass}${octave}`],
+          class: ["offblack", keyNameClass, `${keyNameClass}${octave}`],
           style: {
             "grid-column": `${j === 0 ? 3 : 6 + (j - 1) * 3} / span 2`
           }
@@ -338,7 +347,7 @@ export default {
       }
     },
 
-     keyDownMonitor(response) {
+    keyDownMonitor(response) {
       var keyPressed = response.event.keyCode;
       var keyPressedName = "";
       var keys = this.keysData;
@@ -348,7 +357,7 @@ export default {
             key.class[0] + " " + key.class[1] + " " + key.class[2]
           );
           console.log(key);
-          keyPressedName = key.class[2]
+          keyPressedName = key.class[2];
           console.log(keyPressedName + "!");
           document
             .getElementsByClassName(classString)[0]
@@ -374,11 +383,13 @@ export default {
         html5: true,
         autoplay: true,
         volume: 1.0,
-        format: 'mp3',
-        onload: function() { console.log('song loaded!')},
+        format: "mp3",
+        onload: function() {
+          console.log("song loaded!");
+        }
       });
       sound.play();
-      console.log(sound.state())
+      console.log(sound.state());
     },
 
     keyUpMonitor(response) {
@@ -393,6 +404,67 @@ export default {
             .classList.remove("active");
         }
       }
+    },
+
+    setWebsocketMessageListener() {
+      this.conn.ws.onmessage = messageEvent => {
+        const socketPayload = JSON.parse(messageEvent.data);
+        console.log("YO we out here...", socketPayload);
+        console.log("YO we out here...", socketPayload.eventName);
+
+        switch (socketPayload.eventName) {
+          case "keyboardPress": {
+            console.log("YO we in here...", socketPayload);
+            //this.checkIfValidPayload(socketPayload);
+
+            const messageContent = socketPayload.EventPayload;
+            const sentBy = messageContent.username;
+            const actualMessage = messageContent.message;
+            console.log("YO EventPayload...", socketPayload.EventPayload);
+            console.log({
+              messageFrom: sentBy,
+              message: actualMessage
+            });
+
+            var keyPressed = actualMessage;
+            var keyPressedName = "";
+            var keys = this.keysData;
+            for (var key of keys) {
+              if (key.keyCode == keyPressed) {
+                let classString = String(
+                  key.class[0] + " " + key.class[1] + " " + key.class[2]
+                );
+                console.log(key);
+                keyPressedName = key.class[2];
+                console.log(keyPressedName + "!");
+                document
+                  .getElementsByClassName(classString)[0]
+                  .classList.add("active");
+              }
+            }
+            console.log(keyPressedName);
+            console.log(`${keyPressedName}.mp3`);
+            var sound = new Howl({
+              src: [`${keyPressedName}.mp3`],
+              html5: true,
+              autoplay: true,
+              volume: 1.0,
+              format: "mp3",
+              onload: function() {
+                console.log("song loaded!");
+              }
+            });
+            if (sentBy != this.conn.username) {
+              sound.play();
+            }
+            console.log(sound.state());
+            break;
+          }
+          default: {
+            break;
+          }
+        }
+      };
     },
 
     noteActive(note) {
@@ -441,7 +513,7 @@ li.black span {
   border-color: black !important;
 }
 
-.black {
+.offblack {
   grid-row: 1 / span 2;
   background-color: black;
   color: white;
@@ -464,53 +536,5 @@ li {
 
 .active {
   background-color: rgb(255, 0, 0) !important;
-}
-
-.Fs.active {
-  background-color: rgb(174, 0, 0);
-}
-
-.G.active {
-  background-color: rgb(255, 0, 0);
-}
-
-.Gs.active {
-  background-color: rgb(255, 0, 0);
-}
-
-.A.active {
-  background-color: rgb(255, 102, 0);
-}
-
-.As.active {
-  background-color: rgb(255, 239, 0);
-}
-
-.B.active {
-  background-color: rgb(153, 255, 0);
-}
-
-.C.active {
-  background-color: rgb(0, 40, 255);
-}
-
-.Cs.active {
-  background-color: rgb(0, 255, 242);
-}
-
-.D.active {
-  background-color: rgb(0, 122, 255);
-}
-
-.Ds.active {
-  background-color: rgb(5, 0, 255);
-}
-
-.E.active {
-  background-color: rgb(71, 0, 237);
-}
-
-.F.active {
-  background-color: rgb(99, 0, 178);
 }
 </style>
