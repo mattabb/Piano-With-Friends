@@ -252,9 +252,6 @@ func (c *Client) writeJSON(jsonData []byte) error {
  */
 func (c *Client) readPump() {
 	// Read from websocket
-	defer func() {
-		unRegisterAndCloseConnection(c)
-	}()
 
 	c.webSocketConnection.SetReadLimit(maxMessageSize)
 	c.webSocketConnection.SetReadDeadline(time.Now().Add(pongWait))
@@ -316,18 +313,4 @@ func (c *Client) writePump() {
 			}
 		}
 	}
-}
-
-/*
-* @function unRegisterAndCloseConnection
-* @description
-* Unregisters client from pool and closes websocket
-
-* @param {*Client} c => Client
-* @return N/A
- */
-func unRegisterAndCloseConnection(c *Client) {
-	c.pool.unregister <- c
-	close(c.send)
-	c.webSocketConnection.Close()
 }
