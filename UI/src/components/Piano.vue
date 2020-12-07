@@ -305,7 +305,7 @@ export default {
 
         const key = {
           name: `${keyName}${octave}`,
-          class: ["white", keyName, `${keyName}${octave}`],
+          class: ["offwhite", keyName, `${keyName}${octave}`],
           style: {
             "grid-column": `${j === 0 ? 1 : 4 + (j - 1) * 3} / span 3`
           }
@@ -435,9 +435,10 @@ li.black span {
   margin-bottom: 0.75rem;
 }
 
-.white {
+.offwhite {
   grid-row: 1 / span 3;
   z-index: 2;
+  border-color: black !important;
 }
 
 .black {
