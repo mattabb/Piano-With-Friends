@@ -234,6 +234,9 @@ func (c *Client) writeJSON(jsonData []byte) error {
 	}
 
 	w.Close()
+	// if err := w.Close(); err != nil{
+	//	  return
+	// }
 	log.Println("Closed writer")
 
 	return nil
