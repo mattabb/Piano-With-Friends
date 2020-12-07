@@ -6,7 +6,8 @@ import (
 
 /*
 	User: username of the client
-	Message: string
+	Message: string of keycode
+	Time: unix time at time of client sending to backend
 */
 type EventPayloadStruct struct {
 	User    string `json:"username"`
