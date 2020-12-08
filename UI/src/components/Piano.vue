@@ -1,5 +1,44 @@
 <template>
   <div class="keyboard" :style="style">
+    <v-btn
+      depressed
+      ref="recordButton"
+      color="primary"
+      :loading="loading"
+      :disabled="loading"
+      @click="
+        loader = 'loading';
+        recordStart();
+      "
+    >
+      Start Recording
+    </v-btn>
+    <v-btn
+      depressed
+      ref="recordButton"
+      color="primary"
+      :loading="loading"
+      :disabled="loading"
+      @click="
+        loader = 'loading';
+        recordStop();
+      "
+    >
+      Stop Recording
+    </v-btn>
+    <v-btn
+      depressed
+      ref="recordButton"
+      color="primary"
+      :loading="loading"
+      :disabled="loading"
+      @click="
+        loader = 'loading';
+        recordPlay();
+      "
+    >
+      Play Recorded Music
+    </v-btn>
     <Keypress key-event="keyup" @any="keyUpMonitor" />
     <Keypress key-event="keydown" @any="keyDownMonitor" />
     <ul>
@@ -211,6 +250,48 @@ export default {
     }
   },
   methods: {
+    recordStart() {
+      var d = new Date();
+      var time = d.getTime();
+      var socketPayload = {
+        EventName: "recordStart",
+        EventPayload: {
+          username: this.conn.username,
+          message: "",
+          time: time
+        }
+      };
+      this.sendWebsocketMessage(socketPayload)
+    },
+
+    recordStop() {
+      var d = new Date();
+      var time = d.getTime();
+      var socketPayload = {
+        EventName: "recordStop",
+        EventPayload: {
+          username: this.conn.username,
+          message: "",
+          time: time
+        }
+      };
+      this.sendWebsocketMessage(socketPayload)
+    },
+
+    recordPlay() {
+      var d = new Date();
+      var time = d.getTime();
+      var socketPayload = {
+        EventName: "recordPlay",
+        EventPayload: {
+          username: this.conn.username,
+          message: "",
+          time: time
+        }
+      };
+      this.sendWebsocketMessage(socketPayload)
+    },
+    
     // Clamps a number to a range
     clamp(num, min, max) {
       return Math.max(min, Math.min(max, num));

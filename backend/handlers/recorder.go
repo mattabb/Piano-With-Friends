@@ -12,13 +12,12 @@ import "time"
 * @return N/A
  */
 func beginRecord(client *Client) {
+	client.recordedNotes = &[]SocketEventStruct{}
 	client.recording = true
-	var notes []SocketEventStruct
 	for client.recording {
 		payloadStruct := <-client.recordNotes
-		notes = append(notes, payloadStruct)
+		*(client.recordedNotes) = append(*(client.recordedNotes), payloadStruct)
 	}
-	client.recordedNotes = notes
 }
 
 /*
@@ -32,8 +31,8 @@ func beginRecord(client *Client) {
 * @return N/A
  */
 func playRecording(client *Client) {
-	notes := client.recordedNotes
-	BroadcastSocketEventToAllClient(client, SocketEventStruct{
+	notes := *client.recordedNotes
+	BroadcastSocketEventToAllClient(client, true, SocketEventStruct{
 		EventName: "keyboardPress",
 		EventPayload: EventPayloadStruct{
 			User:    notes[0].EventName,
@@ -44,7 +43,7 @@ func playRecording(client *Client) {
 	for i := 1; i < len(notes); i++ {
 		delay := notes[i].EventPayload.Time - notes[i-1].EventPayload.Time
 		time.Sleep(time.Duration(delay) * time.Millisecond)
-		BroadcastSocketEventToAllClient(client, SocketEventStruct{
+		BroadcastSocketEventToAllClient(client, true, SocketEventStruct{
 			EventName: "keyboardPress",
 			EventPayload: EventPayloadStruct{
 				User:    notes[i].EventName,

@@ -39,6 +39,7 @@ func CreateNewSocketUser(pool *Pool, connection *websocket.Conn, username string
 		send:                make(chan SocketEventStruct),
 		username:            username,
 		recordNotes:         make(chan SocketEventStruct),
+		recordedNotes:       &[]SocketEventStruct{},
 	}
 
 	go client.writePump()
@@ -101,10 +102,10 @@ func HandleUserDisconnectEvent(pool *Pool, client *Client) {
 * @param {SocketEventStruct} payload => contains message being sent along websocket
 * @return N/A
  */
-func BroadcastSocketEventToAllClient(self *Client, payload SocketEventStruct) {
+func BroadcastSocketEventToAllClient(self *Client, includeClient bool, payload SocketEventStruct) {
 
 	for client := range self.pool.clients {
-		if client != self {
+		if !(!includeClient && client == self) {
 			client.send <- payload
 		}
 		// log.Print("the pool is: ", self.pool)
@@ -127,7 +128,7 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 	switch socketEventPayload.EventName {
 	// When someone joins
 	case "join":
-		BroadcastSocketEventToAllClient(client, SocketEventStruct{
+		BroadcastSocketEventToAllClient(client, false, SocketEventStruct{
 			EventName:    socketEventPayload.EventName,
 			EventPayload: socketEventPayload.EventPayload,
 		})
@@ -135,7 +136,7 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 	// When someone disconnects
 	case "disconnect":
 		log.Print("Disconnect event triggered")
-		BroadcastSocketEventToAllClient(client, SocketEventStruct{
+		BroadcastSocketEventToAllClient(client, false, SocketEventStruct{
 			EventName:    socketEventPayload.EventName,
 			EventPayload: socketEventPayload.EventPayload,
 		})
@@ -145,21 +146,21 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 		if client.recording {
 			client.recordNotes <- socketEventPayload
 		}
-		BroadcastSocketEventToAllClient(client, SocketEventStruct{
+		BroadcastSocketEventToAllClient(client, false, SocketEventStruct{
 			EventName:    socketEventPayload.EventName,
 			EventPayload: socketEventPayload.EventPayload,
 		})
 
 	// When someone presses record button
 	case "recordStart":
-		client.recording = true
+		go beginRecord(client)
 
 	// When someone presses the record button while recording
 	case "recordStop":
 		client.recording = false
 
 	case "recordPlay":
-		playRecording(client)
+		go playRecording(client)
 	}
 }
 
