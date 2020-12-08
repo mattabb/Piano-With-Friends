@@ -6,17 +6,14 @@
       color="primary"
       @click="
         loader = 'loading';
-        recordStart()
+        recordStart();
         recording = !recording;
       "
     >
       Start Recording
-      <v-icon
-          dark
-          right
-        >
-          mdi-record-circle
-        </v-icon>
+      <v-icon dark right>
+        mdi-record-circle
+      </v-icon>
     </v-btn>
     <v-btn
       depressed
@@ -24,17 +21,14 @@
       color="primary"
       @click="
         loader = 'loading';
-        recordStop()
+        recordStop();
         recording = !recording;
       "
     >
       Stop Recording
-      <v-icon
-          dark
-          right
-        >
-          mdi-stop-circle
-        </v-icon>
+      <v-icon dark right>
+        mdi-stop-circle
+      </v-icon>
     </v-btn>
     <v-btn
       depressed
@@ -46,12 +40,9 @@
       "
     >
       Play Recorded Music
-      <v-icon
-          dark
-          right
-        >
-          mdi-play-circle
-        </v-icon>
+      <v-icon dark right>
+        mdi-play-circle
+      </v-icon>
     </v-btn>
     <Keypress key-event="keyup" @any="keyUpMonitor" />
     <Keypress key-event="keydown" @any="keyDownMonitor" />
@@ -75,7 +66,8 @@
       icon="mdi-record-circle"
       transition="scale-transition"
     >
-      Recording... Please don't press the start recording button again before you stop.
+      Recording... Please don't press the start recording button again before
+      you stop.
     </v-alert>
   </div>
 </template>
@@ -374,7 +366,7 @@ export default {
     },
 
     toggleFalse(note) {
-      var keyCode = this.getKeyCode(note)
+      var keyCode = this.getKeyCode(note);
       this.removeActiveClass(keyCode);
     },
 
@@ -486,7 +478,7 @@ export default {
 
     removeActiveClass(keyPressed) {
       let keys = this.keysData;
-      console.log(keyPressed)
+      console.log(keyPressed);
       for (var key of keys) {
         if (key.keyCode == keyPressed) {
           let classString = String(
@@ -504,7 +496,7 @@ export default {
 
     addActiveClass(keyPressed) {
       let keys = this.keysData;
-      console.log("add active:", keyPressed)
+      console.log("add active:", keyPressed);
       for (var key of keys) {
         if (key.keyCode == keyPressed) {
           let classString = String(
@@ -513,7 +505,7 @@ export default {
 
           this.keyPressedName = key.class[2];
 
-          console.log("in here:", this.keyPressedName)
+          console.log("in here:", this.keyPressedName);
 
           document
             .getElementsByClassName(classString)[0]
@@ -531,7 +523,7 @@ export default {
     playSound(option) {
       var keyPressedName = this.keyPressedName;
       var sound;
-      console.log("play sound:", keyPressedName, option)
+      console.log("play sound:", keyPressedName, option);
       if (option.playback == "listen") {
         sound = new Howl({
           src: [`${this.keyPressedName}.mp3`],
@@ -562,9 +554,8 @@ export default {
       console.log(sound.state());
     },
 
-
     getKeyCode(note) {
-      var keys = this.keysData
+      var keys = this.keysData;
       for (var key of keys) {
         if (key.name == note) {
           return key.keyCode;
