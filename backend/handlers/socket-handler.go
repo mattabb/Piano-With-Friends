@@ -10,7 +10,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Constants for delays, max message sizes and ping periods
 const (
 	writeWait = 10 * time.Second
 
@@ -111,6 +110,7 @@ func BroadcastSocketEventToAllClient(self *Client, payload SocketEventStruct) {
 		// log.Print("the pool is: ", self.pool)
 		// log.Print("send channel ", client.send, "\n", "payload: ", payload)
 	}
+	log.Print("we out")
 }
 
 /*
@@ -151,13 +151,15 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 		})
 
 	// When someone presses record button
-	case "record":
-		beginRecord(client)
+	case "recordStart":
+		client.recording = true
 
 	// When someone presses the record button while recording
-	case "stoprecord":
+	case "recordStop":
 		client.recording = false
 
+	case "recordPlay":
+		playRecording(client)
 	}
 }
 
@@ -194,58 +196,6 @@ func (c *Client) readJSON() (SocketEventStruct, error) {
 	}
 
 	return socketEventPayload, nil
-}
-
-/*
-* @function encodeJSON
-* @description
-* Encodes JSON from send channel, and sets the write deadline
-
-* @family Client
-* @param payload SocketEventStruct
-* @return []byte, error
- */
-func (c *Client) encodeJSON(payload SocketEventStruct) ([]byte, error) {
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		log.Print("error marshalling payload")
-		return jsonPayload, err
-	}
-
-	// Write now
-	c.webSocketConnection.SetWriteDeadline(time.Now().Add(writeWait))
-
-	return jsonPayload, nil
-}
-
-/*
-* @function writeJSON
-* @description
-* Creates JSON writer and writes to websocket using writerf
-
-* @family Client
-* @param payload []byte
-* @return []byte, error
- */
-func (c *Client) writeJSON(jsonData []byte) error {
-	w, err := c.webSocketConnection.NextWriter(websocket.TextMessage)
-	if err != nil {
-		return err
-	}
-
-	_, errr := w.Write(jsonData)
-	if errr != nil {
-		log.Print("error when trying to write", errr)
-		return errr
-	}
-
-	w.Close()
-	// if err := w.Close(); err != nil{
-	//	  return
-	// }
-	log.Println("Closed writer")
-
-	return nil
 }
 
 /*
@@ -298,19 +248,25 @@ func (c *Client) writePump() {
 				return
 			}
 
+			// Write now
+			c.webSocketConnection.SetWriteDeadline(time.Now().Add(writeWait))
+
 			if !ok {
 				log.Print("not ok")
 				c.webSocketConnection.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
 
-			err := c.writeJSON(jsonPayload)
+			w, err := c.webSocketConnection.NextWriter(websocket.TextMessage)
 			if err != nil {
-				log.Println(err)
 				return
 			}
 
-			return
+			_, errr := w.Write(jsonPayload)
+			if errr != nil {
+				log.Print("error when trying to write", errr)
+				return
+			}
 
 			if err := w.Close(); err != nil {
 				log.Print("closing the writer")

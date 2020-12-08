@@ -38,6 +38,7 @@ type Client struct {
 	username            string
 	recording           bool
 	recordNotes         chan SocketEventStruct
+	recordedNotes       []SocketEventStruct
 }
 
 /*
