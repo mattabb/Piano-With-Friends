@@ -10,6 +10,12 @@
       "
     >
       Start Recording
+      <v-icon
+          dark
+          right
+        >
+          mdi-record-circle
+        </v-icon>
     </v-btn>
     <v-btn
       depressed
@@ -21,6 +27,12 @@
       "
     >
       Stop Recording
+      <v-icon
+          dark
+          right
+        >
+          mdi-stop-circle
+        </v-icon>
     </v-btn>
     <v-btn
       depressed
@@ -32,6 +44,12 @@
       "
     >
       Play Recorded Music
+      <v-icon
+          dark
+          right
+        >
+          mdi-play-circle
+        </v-icon>
     </v-btn>
     <Keypress key-event="keyup" @any="keyUpMonitor" />
     <Keypress key-event="keydown" @any="keyDownMonitor" />
@@ -323,26 +341,28 @@ export default {
     },
 
     toggleTrue(note) {
-      this.addActiveClass(note);
+      var keyCode = this.getKeyCode(note);
+      this.addActiveClass(keyCode);
       var option = {
         playback: "",
-        sentBy: ""
+        sentBy: this.connection.username
       };
-      this.playSound(option);
       var time = this.getCurrentTime();
       var socketPayload = {
         EventName: "keyboardPress",
         EventPayload: {
           username: this.conn.username,
-          message: String(note),
+          message: String(keyCode),
           time: time
         }
       };
       this.sendWebsocketMessage(socketPayload);
+      this.playSound(option);
     },
 
     toggleFalse(note) {
-      this.removeActiveClass(note);
+      var keyCode = this.getKeyCode(note)
+      this.removeActiveClass(keyCode);
     },
 
     setWhiteKeys(keys) {
@@ -402,7 +422,7 @@ export default {
       console.log(`${this.keyPressedName}.mp3`);
       var option = {
         playback: "",
-        sentBy: ""
+        sentBy: this.connection.username
       };
       this.playSound(option);
     },
@@ -437,7 +457,7 @@ export default {
             console.log(`${this.keyPressedName}.mp3`);
             var option = {
               playback: "listen",
-              sentBy: messageContent.username
+              sentBy: sentBy
             };
             this.playSound(option);
 
@@ -453,6 +473,7 @@ export default {
 
     removeActiveClass(keyPressed) {
       let keys = this.keysData;
+      console.log(keyPressed)
       for (var key of keys) {
         if (key.keyCode == keyPressed) {
           let classString = String(
@@ -470,6 +491,7 @@ export default {
 
     addActiveClass(keyPressed) {
       let keys = this.keysData;
+      console.log("add active:", keyPressed)
       for (var key of keys) {
         if (key.keyCode == keyPressed) {
           let classString = String(
@@ -477,6 +499,8 @@ export default {
           );
 
           this.keyPressedName = key.class[2];
+
+          console.log("in here:", this.keyPressedName)
 
           document
             .getElementsByClassName(classString)[0]
@@ -494,9 +518,10 @@ export default {
     playSound(option) {
       var keyPressedName = this.keyPressedName;
       var sound;
+      console.log("play sound:", keyPressedName, option)
       if (option.playback == "listen") {
         sound = new Howl({
-          src: [`${keyPressedName}.mp3`],
+          src: [`${this.keyPressedName}.mp3`],
           html5: true,
           autoplay: true,
           volume: 1.0,
@@ -510,7 +535,7 @@ export default {
         }
       } else {
         sound = new Howl({
-          src: [`${keyPressedName}.mp3`],
+          src: [`${this.keyPressedName}.mp3`],
           html5: true,
           autoplay: true,
           volume: 1.0,
@@ -522,6 +547,16 @@ export default {
         sound.play();
       }
       console.log(sound.state());
+    },
+
+
+    getKeyCode(note) {
+      var keys = this.keysData
+      for (var key of keys) {
+        if (key.name == note) {
+          return key.keyCode;
+        }
+      }
     }
   }
 };
