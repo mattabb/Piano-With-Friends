@@ -1,6 +1,7 @@
 import Vue from "vue";
 import { createRange } from "./music";
 
+/* MOST OF THIS IS DEPRECATED */
 const notes = createRange("A0", "C8");
 
 const noteMap = notes.reduce((map, note) => {

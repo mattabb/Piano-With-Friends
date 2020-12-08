@@ -48,7 +48,7 @@
         :style="key.style"
         @mousedown="toggleTrue(key.name)"
         @mouseup="toggleFalse(key.name)"
-        :class="[...key.class, { active: noteActive(key.name) }]"
+        :class="[...key.class]"
       >
         <span>{{ key.name }}</span>
       </li>
@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import pianoState from "../library/piano-state";
+// import pianoState from "../library/piano-state";
 import { addKeyCodeToKeys } from "../library/piano-mappings";
 import { Howl } from "howler";
 
@@ -143,7 +143,8 @@ export default {
     conn: {
       ws: null,
       username: ""
-    }
+    },
+    keyPressedName: ""
     // ,pianoState: []
   }),
 
@@ -251,8 +252,7 @@ export default {
   },
   methods: {
     recordStart() {
-      var d = new Date();
-      var time = d.getTime();
+      var time = this.getCurrentTime();
       var socketPayload = {
         EventName: "recordStart",
         EventPayload: {
@@ -261,12 +261,11 @@ export default {
           time: time
         }
       };
-      this.sendWebsocketMessage(socketPayload)
+      this.sendWebsocketMessage(socketPayload);
     },
 
     recordStop() {
-      var d = new Date();
-      var time = d.getTime();
+      var time = this.getCurrentTime();
       var socketPayload = {
         EventName: "recordStop",
         EventPayload: {
@@ -275,12 +274,11 @@ export default {
           time: time
         }
       };
-      this.sendWebsocketMessage(socketPayload)
+      this.sendWebsocketMessage(socketPayload);
     },
 
     recordPlay() {
-      var d = new Date();
-      var time = d.getTime();
+      var time = this.getCurrentTime();
       var socketPayload = {
         EventName: "recordPlay",
         EventPayload: {
@@ -289,9 +287,9 @@ export default {
           time: time
         }
       };
-      this.sendWebsocketMessage(socketPayload)
+      this.sendWebsocketMessage(socketPayload);
     },
-    
+
     // Clamps a number to a range
     clamp(num, min, max) {
       return Math.max(min, Math.min(max, num));
@@ -331,61 +329,26 @@ export default {
     },
 
     toggleTrue(note) {
-      var keys = this.keysData;
-      var keyPressedName = "";
-      for (var key of keys) {
-        if (key.name == note) {
-          let classString = String(
-            key.class[0] + " " + key.class[1] + " " + key.class[2]
-          );
-          console.log(key);
-          keyPressedName = key.class[2];
-          console.log(keyPressedName + "!");
-          document
-            .getElementsByClassName(classString)[0]
-            .classList.add("active");
-
-          var d = new Date();
-          var time = d.getTime();
-          var socketPayload = {
-            EventName: "keyboardPress",
-            EventPayload: {
-              username: this.conn.username,
-              message: String(key.keyCode),
-              time: time
-            }
-          };
-          console.log("socketpayload", socketPayload);
-          this.sendWebsocketMessage(socketPayload);
+      this.addActiveClass(note);
+      var option = {
+        playback: "",
+        sentBy: ""
+      };
+      this.playSound(option);
+      var time = this.getCurrentTime();
+      var socketPayload = {
+        EventName: "keyboardPress",
+        EventPayload: {
+          username: this.conn.username,
+          message: String(note),
+          time: time
         }
-      }
-      console.log(keyPressedName);
-      console.log(`${keyPressedName}.mp3`);
-      var sound = new Howl({
-        src: [`${keyPressedName}.mp3`],
-        html5: true,
-        autoplay: true,
-        volume: 1.0,
-        format: "mp3",
-        onload: function() {
-          console.log("song loaded!");
-        }
-      });
-      sound.play();
-      console.log(sound.state());
+      };
+      this.sendWebsocketMessage(socketPayload);
     },
 
     toggleFalse(note) {
-      var keys = this.keysData;
-      for (var key of keys) {
-        if (key.name == note) {
-          let classString =
-            key.class[0] + " " + key.class[1] + " " + key.class[2];
-          document
-            .getElementsByClassName(classString)[0]
-            .classList.remove("active");
-        }
-      }
+      this.removeActiveClass(note);
     },
 
     setWhiteKeys(keys) {
@@ -430,61 +393,29 @@ export default {
 
     keyDownMonitor(response) {
       var keyPressed = response.event.keyCode;
-      var keyPressedName = "";
-      var keys = this.keysData;
-      for (var key of keys) {
-        if (key.keyCode == keyPressed) {
-          let classString = String(
-            key.class[0] + " " + key.class[1] + " " + key.class[2]
-          );
-          console.log(key);
-          keyPressedName = key.class[2];
-          console.log(keyPressedName + "!");
-          document
-            .getElementsByClassName(classString)[0]
-            .classList.add("active");
-
-          var d = new Date();
-          var time = d.getTime();
-          var socketPayload = {
-            EventName: "keyboardPress",
-            EventPayload: {
-              username: this.conn.username,
-              message: String(key.keyCode),
-              time: time
-            }
-          };
-          this.sendWebsocketMessage(socketPayload);
+      this.addActiveClass(keyPressed);
+      var time = this.getCurrentTime();
+      var socketPayload = {
+        EventName: "keyboardPress",
+        EventPayload: {
+          username: this.conn.username,
+          message: String(keyPressed),
+          time: time
         }
-      }
-      console.log(keyPressedName);
-      console.log(`${keyPressedName}.mp3`);
-      var sound = new Howl({
-        src: [`${keyPressedName}.mp3`],
-        html5: true,
-        autoplay: true,
-        volume: 1.0,
-        format: "mp3",
-        onload: function() {
-          console.log("song loaded!");
-        }
-      });
-      sound.play();
-      console.log(sound.state());
+      };
+      this.sendWebsocketMessage(socketPayload);
+      console.log(this.keyPressedName);
+      console.log(`${this.keyPressedName}.mp3`);
+      var option = {
+        playback: "",
+        sentBy: ""
+      };
+      this.playSound(option);
     },
 
     keyUpMonitor(response) {
       var keyLifted = response.event.keyCode;
-      var keys = this.keysData;
-      for (var key of keys) {
-        if (key.keyCode == keyLifted) {
-          let classString =
-            key.class[0] + " " + key.class[1] + " " + key.class[2];
-          document
-            .getElementsByClassName(classString)[0]
-            .classList.remove("active");
-        }
-      }
+      this.removeActiveClass(keyLifted);
     },
 
     setWebsocketMessageListener() {
@@ -496,7 +427,6 @@ export default {
         switch (socketPayload.eventName) {
           case "keyboardPress": {
             console.log("YO we in here...", socketPayload);
-            //this.checkIfValidPayload(socketPayload);
 
             const messageContent = socketPayload.EventPayload;
             const sentBy = messageContent.username;
@@ -508,47 +438,16 @@ export default {
             });
 
             var keyPressed = actualMessage;
-            var keyPressedName = "";
-            var keys = this.keysData;
-            for (var key of keys) {
-              if (key.keyCode == keyPressed) {
-                let classString = String(
-                  key.class[0] + " " + key.class[1] + " " + key.class[2]
-                );
-                console.log(key);
-                keyPressedName = key.class[2];
-                console.log(keyPressedName + "!");
-                document
-                  .getElementsByClassName(classString)[0]
-                  .classList.add("active");
-              }
-            }
-            console.log(keyPressedName);
-            console.log(`${keyPressedName}.mp3`);
-            var sound = new Howl({
-              src: [`${keyPressedName}.mp3`],
-              html5: true,
-              autoplay: true,
-              volume: 1.0,
-              format: "mp3",
-              onload: function() {
-                console.log("song loaded!");
-              }
-            });
-            if (sentBy != this.conn.username) {
-              sound.play();
-            }
-            for (key of keys) {
-              if (key.keyCode == keyPressed) {
-                let classString = String(
-                  key.class[0] + " " + key.class[1] + " " + key.class[2]
-                )
-                document
-                .getElementsByClassName(classString)[0]
-                .classList.remove("active")
-              }
-            }
-            console.log(sound.state());
+            this.addActiveClass(keyPressed);
+            console.log(this.keyPressedName);
+            console.log(`${this.keyPressedName}.mp3`);
+            var option = {
+              playback: "listen",
+              sentBy: messageContent.username
+            };
+            this.playSound(option);
+
+            setTimeout(this.removeActiveClass(keyPressed), 1000);
             break;
           }
           default: {
@@ -558,8 +457,77 @@ export default {
       };
     },
 
-    noteActive(note) {
-      return pianoState[note] === true;
+    removeActiveClass(keyPressed) {
+      let keys = this.keysData;
+      for (var key of keys) {
+        if (key.keyCode == keyPressed) {
+          let classString = String(
+            key.class[0] + " " + key.class[1] + " " + key.class[2]
+          );
+
+          this.keyPressedName = key.class[2];
+
+          document
+            .getElementsByClassName(classString)[0]
+            .classList.remove("active");
+        }
+      }
+    },
+
+    addActiveClass(keyPressed) {
+      let keys = this.keysData;
+      for (var key of keys) {
+        if (key.keyCode == keyPressed) {
+          let classString = String(
+            key.class[0] + " " + key.class[1] + " " + key.class[2]
+          );
+
+          this.keyPressedName = key.class[2];
+
+          document
+            .getElementsByClassName(classString)[0]
+            .classList.add("active");
+        }
+      }
+    },
+
+    getCurrentTime() {
+      var d = new Date();
+      var time = d.getTime();
+      return time;
+    },
+
+    playSound(option) {
+      var keyPressedName = this.keyPressedName;
+      var sound;
+      if (option.playback == "listen") {
+        sound = new Howl({
+          src: [`${keyPressedName}.mp3`],
+          html5: true,
+          autoplay: true,
+          volume: 1.0,
+          format: "mp3",
+          onload: function() {
+            console.log("song loaded!");
+          }
+        });
+        if (option.sentBy != this.conn.username) {
+          sound.play();
+        }
+      } else {
+        sound = new Howl({
+          src: [`${keyPressedName}.mp3`],
+          html5: true,
+          autoplay: true,
+          volume: 1.0,
+          format: "mp3",
+          onload: function() {
+            console.log("song loaded!");
+          }
+        });
+        sound.play();
+      }
+      console.log(sound.state());
     }
   }
 };

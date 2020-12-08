@@ -24,7 +24,6 @@
       <v-spacer></v-spacer>
 
       <div v-if="isConnected">Username: {{ connection.username }}</div>
-
     </v-app-bar>
 
     <v-main>

@@ -235,7 +235,7 @@ func (c *Client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		c.webSocketConnection.Close()
+		unRegisterAndCloseConnection(c)
 	}()
 
 	for {
@@ -293,6 +293,6 @@ func (c *Client) writePump() {
  */
 func unRegisterAndCloseConnection(c *Client) {
 	c.pool.unregister <- c
-	close(c.send)
+	// close(c.send)
 	c.webSocketConnection.Close()
 }
