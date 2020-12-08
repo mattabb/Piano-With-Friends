@@ -147,6 +147,11 @@ export default {
 
     // this.pianoState = pianoState
   },
+
+  mounted() {
+    this.setWebsocketMessageListener();
+  },
+
   computed: {
     offsetStart() {
       return this.clamp(this.offsets.noteStart, MIN_NOTE, MAX_NOTE);
@@ -399,6 +404,77 @@ export default {
             .classList.remove("active");
         }
       }
+    },
+
+    setWebsocketMessageListener() {
+      this.conn.ws.onmessage = messageEvent => {
+        const socketPayload = JSON.parse(messageEvent.data);
+        console.log("YO we out here...", socketPayload);
+        console.log("YO we out here...", socketPayload.eventName);
+
+        switch (socketPayload.eventName) {
+          case "keyboardPress": {
+            console.log("YO we in here...", socketPayload);
+            //this.checkIfValidPayload(socketPayload);
+
+            const messageContent = socketPayload.EventPayload;
+            const sentBy = messageContent.username;
+            const actualMessage = messageContent.message;
+            console.log("YO EventPayload...", socketPayload.EventPayload);
+            console.log({
+              messageFrom: sentBy,
+              message: actualMessage
+            });
+
+            var keyPressed = actualMessage;
+            var keyPressedName = "";
+            var keys = this.keysData;
+            for (var key of keys) {
+              if (key.keyCode == keyPressed) {
+                let classString = String(
+                  key.class[0] + " " + key.class[1] + " " + key.class[2]
+                );
+                console.log(key);
+                keyPressedName = key.class[2];
+                console.log(keyPressedName + "!");
+                document
+                  .getElementsByClassName(classString)[0]
+                  .classList.add("active");
+              }
+            }
+            console.log(keyPressedName);
+            console.log(`${keyPressedName}.mp3`);
+            var sound = new Howl({
+              src: [`${keyPressedName}.mp3`],
+              html5: true,
+              autoplay: true,
+              volume: 1.0,
+              format: "mp3",
+              onload: function() {
+                console.log("song loaded!");
+              }
+            });
+            if (sentBy != this.conn.username) {
+              sound.play();
+            }
+            for (key of keys) {
+              if (key.keyCode == keyPressed) {
+                let classString = String(
+                  key.class[0] + " " + key.class[1] + " " + key.class[2]
+                )
+                document
+                .getElementsByClassName(classString)[0]
+                .classList.remove("active")
+              }
+            }
+            console.log(sound.state());
+            break;
+          }
+          default: {
+            break;
+          }
+        }
+      };
     },
 
     noteActive(note) {
