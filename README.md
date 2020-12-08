@@ -1,7 +1,6 @@
 # Piano With Friends
-> Piano with Friends is a project which allows multiple people to connect and play piano together using websockets.  You can try it out for yourself at:
+> Piano with Friends is a project which allows multiple people to connect and play piano together using websockets. 
 
-> http://thisiswebsiteurl.com
 
 ## Table of contents
 * [General info](#general-info)
