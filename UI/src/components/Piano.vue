@@ -457,9 +457,16 @@ export default {
             if (sentBy != this.conn.username) {
               sound.play();
             }
-            document
+            for (key of keys) {
+              if (key.keyCode == keyPressed) {
+                let classString = String(
+                  key.class[0] + " " + key.class[1] + " " + key.class[2]
+                )
+                document
                 .getElementsByClassName(classString)[0]
                 .classList.remove("active")
+              }
+            }
             console.log(sound.state());
             break;
           }

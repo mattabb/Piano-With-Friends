@@ -222,16 +222,16 @@ export default {
 
       this.setWebsocketCloseListener();
 
-      this.listenToWebsocketMessage();
+      //this.listenToWebsocketMessage();
 
-      var d = new Date();
-      var time = d.getTime();
-      var mockMessage = {
-        eventName: "keyboardPress",
-        message: "abcdefgh",
-        time: time
-      };
-      this.sendWebsocketMessage(mockMessage);
+      // var d = new Date();
+      // var time = d.getTime();
+      // var mockMessage = {
+      //   eventName: "keyboardPress",
+      //   message: "abcdefgh",
+      //   time: time
+      // };
+      // this.sendWebsocketMessage(mockMessage);
     },
 
     // this is how we send messages to the backend
