@@ -29,7 +29,7 @@ Below is an image of the home screen that you are greeted to when entering the w
 ![Home Page](./screenshots/HomePage.png)
 
 After you are connected, your webpage should change to show this:
-![Piano Page](./screenshots/PianoPage.png)
+![Piano Page](./screenshots/PianoPage.PNG)
 
 ## Technologies
 ### Deployment
