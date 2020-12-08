@@ -6,7 +6,8 @@
       color="primary"
       @click="
         loader = 'loading';
-        recordStart();
+        recordStart()
+        recording = !recording;
       "
     >
       Start Recording
@@ -23,7 +24,8 @@
       color="primary"
       @click="
         loader = 'loading';
-        recordStop();
+        recordStop()
+        recording = !recording;
       "
     >
       Stop Recording
@@ -65,6 +67,16 @@
         <span>{{ key.name }}</span>
       </li>
     </ul>
+    <v-alert
+      :value="recording"
+      color="pink"
+      dark
+      border="top"
+      icon="mdi-record-circle"
+      transition="scale-transition"
+    >
+      Recording... Please don't press the start recording button again before you stop.
+    </v-alert>
   </div>
 </template>
 
@@ -156,7 +168,8 @@ export default {
       ws: null,
       username: ""
     },
-    keyPressedName: ""
+    keyPressedName: "",
+    recording: false
     // ,pianoState: []
   }),
 
@@ -456,7 +469,7 @@ export default {
             console.log(this.keyPressedName);
             console.log(`${this.keyPressedName}.mp3`);
             var option = {
-              playback: "listen",
+              playback: "",
               sentBy: sentBy
             };
             this.playSound(option);
