@@ -4,8 +4,6 @@
       depressed
       ref="recordButton"
       color="primary"
-      :loading="loading"
-      :disabled="loading"
       @click="
         loader = 'loading';
         recordStart();
@@ -17,8 +15,6 @@
       depressed
       ref="recordButton"
       color="primary"
-      :loading="loading"
-      :disabled="loading"
       @click="
         loader = 'loading';
         recordStop();
@@ -30,8 +26,6 @@
       depressed
       ref="recordButton"
       color="primary"
-      :loading="loading"
-      :disabled="loading"
       @click="
         loader = 'loading';
         recordPlay();
