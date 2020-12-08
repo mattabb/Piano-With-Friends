@@ -25,14 +25,6 @@
 
       <div v-if="isConnected">Username: {{ connection.username }}</div>
 
-      <!-- <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn> -->
     </v-app-bar>
 
     <v-main>
@@ -98,14 +90,12 @@
 </template>
 
 <script>
-//import PianoPage from "./components/PianoPage";
 import Piano from "./components/Piano";
 
 export default {
   name: "App",
 
   components: {
-    //PianoPage,
     Piano
   },
 
@@ -114,7 +104,7 @@ export default {
       ws: null,
       username: ""
     },
-    serverUrl: "3.81.160.186:8000",
+    serverUrl: "localhost:8000",
     isConnected: false,
     connectionError: false,
     loader: null,
@@ -225,45 +215,6 @@ export default {
       };
     },
 
-    setWebsocketMessageListener() {
-      this.connection.ws.onmessage = messageEvent => {
-        const socketPayload = JSON.parse(messageEvent.data);
-        console.log("received message from backend...", socketPayload);
-
-        switch (socketPayload.EventName) {
-          // Join case
-          case "join": {
-            this.checkIfValidPayload(socketPayload);
-
-            console.log(socketPayload.eventPayload, "has joined the chat");
-            break;
-          }
-          case "disconnect": {
-            this.checkIfValidPayload(socketPayload);
-
-            console.log(socketPayload.eventPayload, "has left the chat");
-            break;
-          }
-          case "keyboardPress": {
-            this.checkIfValidPayload(socketPayload);
-
-            const messageContent = socketPayload.EventPayload;
-            const sentBy = messageContent.username;
-            const actualMessage = messageContent.message;
-
-            console.log({
-              messageFrom: sentBy,
-              message: actualMessage
-            });
-            break;
-          }
-          default: {
-            break;
-          }
-        }
-      };
-    },
-
     onWebsocketOpen(event) {
       console.log(event, "connected to websocket!");
 
@@ -271,16 +222,16 @@ export default {
 
       this.setWebsocketCloseListener();
 
-      this.listenToWebsocketMessage();
+      //this.listenToWebsocketMessage();
 
-      var d = new Date();
-      var time = d.getTime();
-      var mockMessage = {
-        eventName: "keyboardPress",
-        message: "abcdefgh",
-        time: time
-      };
-      this.sendWebsocketMessage(mockMessage);
+      // var d = new Date();
+      // var time = d.getTime();
+      // var mockMessage = {
+      //   eventName: "keyboardPress",
+      //   message: "abcdefgh",
+      //   time: time
+      // };
+      // this.sendWebsocketMessage(mockMessage);
     },
 
     // this is how we send messages to the backend
@@ -303,17 +254,6 @@ export default {
       if (!socketPayload.EventPayload) {
         return;
       }
-    },
-
-    // listen to response from the websocket
-    listenToWebsocketMessage() {
-      // If we have no connection, we can't listen
-      if (this.connection.ws === null) {
-        console.log("hit error in listen to websocket message");
-        return;
-      }
-
-      this.setWebsocketMessageListener();
     }
   }
 };

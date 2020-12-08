@@ -107,7 +107,6 @@ func BroadcastSocketEventToAllClient(self *Client, payload SocketEventStruct) {
 	for client := range self.pool.clients {
 		if client != self {
 			client.send <- payload
-			log.Println("sent payload")
 		}
 		log.Print("the pool is: ", self.pool)
 		log.Print("send channel ", client.send, "\n", "payload: ", payload)
@@ -146,7 +145,10 @@ func handleSocketPayloadEvents(client *Client, socketEventPayload SocketEventStr
 		if client.recording {
 			client.recordNotes <- socketEventPayload
 		}
-		BroadcastSocketEventToAllClient(client, socketEventPayload)
+		BroadcastSocketEventToAllClient(client, SocketEventStruct{
+			EventName:    socketEventPayload.EventName,
+			EventPayload: socketEventPayload.EventPayload,
+		})
 
 	// When someone presses record button
 	case "record":
@@ -251,7 +253,6 @@ func (c *Client) writeJSON(jsonData []byte) error {
 * @return N/A
  */
 func (c *Client) readPump() {
-	// Read from websocket
 
 	c.webSocketConnection.SetReadLimit(maxMessageSize)
 	c.webSocketConnection.SetReadDeadline(time.Now().Add(pongWait))
@@ -287,8 +288,9 @@ func (c *Client) writePump() {
 		case payload, ok := <-c.send:
 
 			log.Print("Hit writepump for ", c.username, " payload is: ", payload)
-			jsonPayload, encodeErr := c.encodeJSON(payload)
-			if encodeErr != nil {
+			jsonPayload, err := json.Marshal(payload)
+			if err != nil {
+				log.Print("error marshalling payload")
 				return
 			}
 
@@ -306,6 +308,11 @@ func (c *Client) writePump() {
 
 			return
 
+			if err := w.Close(); err != nil {
+				log.Print("closing the writer")
+				return
+			}
+
 		case <-ticker.C:
 			c.webSocketConnection.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.webSocketConnection.WriteMessage(websocket.PingMessage, nil); err != nil {
@@ -313,4 +320,18 @@ func (c *Client) writePump() {
 			}
 		}
 	}
+}
+
+/*
+* @function unRegisterAndCloseConnection
+* @description
+* Unregisters client from pool and closes websocket
+
+* @param {*Client} c => Client
+* @return N/A
+ */
+func unRegisterAndCloseConnection(c *Client) {
+	c.pool.unregister <- c
+	close(c.send)
+	c.webSocketConnection.Close()
 }
