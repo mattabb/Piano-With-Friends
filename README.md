@@ -36,7 +36,9 @@ After you are connected, your webpage should change to show this:
 
 #### Docker
 
-Enter docker description here
+We chose Docker because it allowed for a more streamlined deployment onto the server. It creates a lightweight, self sufficient container that can be transferred between environments. Docker is also one of the most popular container services so we thought learning how to use it for a project could be helpful.
+
+The docker containers are then hosted in the Amazon Web Service, Elastic Container Registry (ECR). From the repositories, the front and back end are hosted in two separate instances of the Elastic Container Service (ECS)  and deployed with FARGATE. ECR is the simplest way we found to host docker containers on AWS and had seamless integration with ECS. FARGATE takes care of the provisioning and allocation of resources for the server. It helps us remain in the free tier and not pay for unnecessary servers and computation.
 ### Front-end
 
 Vue is a new, sleek JavaScript library that is closely related to the rising ReactJS, but different in a few ways, with the major difference being the extra abstraction of Vue's components.  The choice to use Vue was made due to its extensive documentation, allowing for a less steep learning curve.  Furthermore, the Vue-CLI 3 tooling was used, allowing for a quick out-of-the-box front-end setup with multiple libraries that are easy to add to.
