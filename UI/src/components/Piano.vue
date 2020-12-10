@@ -202,7 +202,6 @@ export default {
     this.setBlackKeys(this.keysData);
     addKeyCodeToKeys(this.keysData);
 
-    // this.pianoState = pianoState
   },
 
   mounted() {

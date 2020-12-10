@@ -220,33 +220,9 @@ export default {
       this.setIsConnected();
 
       this.setWebsocketCloseListener();
-
-      //this.listenToWebsocketMessage();
-
-      // var d = new Date();
-      // var time = d.getTime();
-      // var mockMessage = {
-      //   eventName: "keyboardPress",
-      //   message: "abcdefgh",
-      //   time: time
-      // };
-      // this.sendWebsocketMessage(mockMessage);
     },
 
-    // this is how we send messages to the backend
-    sendWebsocketMessage(socketPayload) {
-      console.log("message being sent", socketPayload);
-      this.connection.ws.send(
-        JSON.stringify({
-          EventName: socketPayload.eventName,
-          EventPayload: {
-            username: this.connection.username,
-            message: socketPayload.message,
-            time: socketPayload.time
-          }
-        })
-      );
-    },
+
 
     // Make sure payload is not empty
     checkIfValidPayload(socketPayload) {
